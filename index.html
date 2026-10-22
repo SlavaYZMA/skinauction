@@ -1,0 +1,208 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="description" content="People in Berlin auction a spot of their own skin. The highest bidder decides what will be tattooed there. Bidding 30 Nov – 6 Dec 2026.">
+<meta property="og:title" content="Skin Auction"><meta property="og:description" content="People in Berlin auction a spot of their own skin. Bidding 30 Nov – 6 Dec 2026, worldwide."><meta property="og:image" content="lot.jpg">
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>Skin Auction</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+/* Layout: an auction catalogue page. Text column left, the lot (a photo of skin) right; below, catalogue sections with lot-style data in mono. */
+:root{
+  --paper:#f4ebe5; --ink:#1c1614; --muted:#6b5b54; --skin:#e7b49c; --skin-2:#f0cdbb; --rule:#cdb7ac; --mark:#8f1e17; --card:#fbf5f1;
+  --display:"Anton","Arial Narrow",Impact,sans-serif;
+  --body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --paper:#16110f; --ink:#f2e6df; --muted:#b29f96; --skin:#c98f74; --skin-2:#3a2a24; --rule:#3d302b; --mark:#e0614f; --card:#1f1815; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --paper:#16110f; --ink:#f2e6df; --muted:#b29f96; --skin:#c98f74; --skin-2:#3a2a24; --rule:#3d302b; --mark:#e0614f; --card:#1f1815; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--paper);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.55;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0 48px}
+.wrap{max-width:1080px;margin:0 auto}
+a{color:inherit}
+.top{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;padding-block:20px 14px;border-bottom:1px solid var(--rule);
+  font-family:var(--mono);font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.hero{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,.85fr);gap:40px;padding-block:36px 44px;align-items:start}
+h1{font-family:var(--display);font-weight:400;font-size:clamp(64px,13vw,150px);line-height:.88;letter-spacing:.005em;margin:0 0 22px;text-transform:uppercase}
+.lede{font-size:clamp(19px,2.4vw,24px);line-height:1.35;font-weight:500;max-width:30ch;margin:0 0 14px;text-wrap:balance}
+.q{font-style:italic;color:var(--muted);margin:0 0 28px;max-width:46ch}
+.cta{display:flex;flex-wrap:wrap;gap:12px;align-items:center}
+.btn{display:inline-block;background:var(--ink);color:var(--paper);text-decoration:none;font-weight:600;padding:13px 20px;border-radius:2px;border:0;font:inherit;font-weight:600;cursor:pointer}
+.btn:focus-visible,.copy:focus-visible{outline:2px solid var(--mark);outline-offset:3px}
+.note{font-family:var(--mono);font-size:13px;color:var(--muted)}
+.lot{margin:0;position:relative}
+.lot img{display:block;width:100%;aspect-ratio:3/4;object-fit:cover;filter:saturate(.92)}
+.lot figcaption{font-family:var(--mono);font-size:12px;color:var(--muted);display:flex;justify-content:space-between;gap:8px;padding-top:8px;border-top:1px solid var(--rule);margin-top:10px}
+.tag{position:absolute;top:12px;left:12px;background:var(--skin);color:#1c1614;font-family:var(--mono);font-size:12px;padding:4px 8px;letter-spacing:.04em}
+section{border-top:1px solid var(--ink);padding-block:28px 34px}
+.sec-head{display:grid;grid-template-columns:200px minmax(0,1fr);gap:24px}
+h2{font-family:var(--mono);font-weight:500;font-size:13px;letter-spacing:.1em;text-transform:uppercase;margin:4px 0 0}
+.steps{list-style:none;margin:0;padding:0;display:grid;gap:18px;counter-reset:s}
+.steps li{display:grid;grid-template-columns:44px minmax(0,1fr);gap:12px;counter-increment:s}
+.steps li::before{content:counter(s,decimal-leading-zero);font-family:var(--display);font-size:28px;line-height:1;color:var(--mark)}
+.steps b{display:block;font-weight:600}
+.steps p,.body p{margin:0;max-width:62ch}
+.body{display:grid;gap:14px}
+.spec{background:var(--card);border:1px solid var(--rule);font-family:var(--mono);font-size:14px;max-width:560px}
+.spec .hd{display:flex;justify-content:space-between;padding:10px 14px;border-bottom:1px solid var(--rule);background:var(--skin-2)}
+.spec dl{margin:0;display:grid;grid-template-columns:150px minmax(0,1fr)}
+.spec dt,.spec dd{margin:0;padding:8px 14px;border-bottom:1px solid var(--rule)}
+.spec dt{color:var(--muted)}
+.spec dd{font-variant-numeric:tabular-nums}
+.spec dl>*:nth-last-child(-n+2){border-bottom:0}
+.prec{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}
+.prec article{border-left:2px solid var(--skin);padding-left:14px}
+.prec .yr{font-family:var(--mono);font-size:13px;color:var(--mark)}
+.prec h3{margin:2px 0 6px;font-size:17px}
+.prec p{margin:0;color:var(--muted);font-size:15px}
+.reg{background:var(--skin);color:#1c1614;padding:28px;border-radius:2px;display:grid;gap:16px}
+.reg h3{font-family:var(--display);font-weight:400;font-size:clamp(36px,6vw,56px);line-height:.95;margin:0;text-transform:uppercase}
+.reg p{margin:0;max-width:60ch}
+.ways{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.way{background:#fbf3ee;padding:14px 16px;display:grid;gap:6px;min-width:0}
+.way .k{font-family:var(--mono);font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:#6b4e42}
+.way .v{font-family:var(--mono);font-size:16px;word-break:break-all}
+.copy{justify-self:start;background:#1c1614;color:#fbf3ee;border:0;font:inherit;font-size:13px;padding:6px 10px;cursor:pointer;border-radius:2px}
+.msg{font-family:var(--mono);font-size:13px;background:#fbf3ee;padding:12px 14px;white-space:pre-wrap;margin:0}
+.rules{margin:0;padding-left:18px;display:grid;gap:8px;max-width:64ch}
+footer{border-top:1px solid var(--rule);padding-top:16px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;font-family:var(--mono);font-size:12px;color:var(--muted)}
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--paper);padding:8px 14px;font-family:var(--mono);font-size:13px}
+@media (max-width:760px){
+  .hero{grid-template-columns:minmax(0,1fr);gap:28px}
+  .sec-head{grid-template-columns:minmax(0,1fr);gap:14px}
+  .prec,.ways{grid-template-columns:minmax(0,1fr)}
+  .spec dl{grid-template-columns:120px minmax(0,1fr)}
+  .reg{padding:20px}
+}
+@media (prefers-reduced-motion:no-preference){.btn{transition:transform .15s}.btn:hover{transform:translateY(-1px)}}
+</style>
+
+</head><body>
+<div class="wrap">
+  <div class="top"><span>Live art project · Berlin · 2026</span><span>Bidding 30 Nov – 6 Dec 2026 · worldwide</span></div>
+
+  <div class="hero">
+    <div>
+      <h1>Skin<br>Auction</h1>
+      <p class="lede">People in Berlin put a spot of their own skin up for auction. Whoever bids highest decides what will be tattooed there, for good.</p>
+      <p class="q">Who does a body belong to once someone has paid for it?</p>
+      <div class="cta">
+        <a class="btn" href="#register">Register to bid</a>
+        <span class="note">Registered bidders see the lots 24 h before everyone else</span>
+      </div>
+    </div>
+    <figure class="lot">
+      <span class="tag">Skin, live</span>
+      <img src="lot.jpg" alt="A microrealist insect tattoo on a shoulder, by Slava">
+      <figcaption><span>Tattoo by Slava</span><span>Microrealism</span></figcaption>
+    </figure>
+  </div>
+
+  <section>
+    <div class="sec-head">
+      <h2>How it works</h2>
+      <ol class="steps">
+        <li><div><b>The lots</b><p>5–7 people aged 21+ are selected through an open call. Each one sets the spot on the body, its size, a starting price and what must never be tattooed there.</p></div></li>
+        <li><div><b>Seven days of bidding</b><p>Bidding runs online from Monday 30 November to Sunday 6 December 2026. Anyone can bid, from any country. The last hour, 19:00–20:00 Berlin time on 6 December, runs live.</p></div></li>
+        <li><div><b>The winner chooses the image</b><p>The highest bidder sends a design within 3 days. The participant has 24 hours to accept or refuse it. Nothing is paid before a yes.</p></div></li>
+        <li><div><b>The tattoo</b><p>Slava tattoos the design in her Berlin studio. The participant keeps the full winning bid. The winner adds €30 for materials and receives the documentation.</p></div></li>
+      </ol>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-head">
+      <h2>A lot looks like this</h2>
+      <div class="body">
+        <div class="spec" role="group" aria-label="Example lot">
+          <div class="hd"><span>Lot 00</span><span>Example</span></div>
+          <dl>
+            <dt>Placement</dt><dd>Left ankle</dd>
+            <dt>Size</dt><dd>up to 6 × 6 cm</dd>
+            <dt>Starting bid</dt><dd>€ 80</dd>
+            <dt>Never</dt><dd>faces of real people, hate symbols, logos</dd>
+            <dt>Seller</dt><dd>public, with name and photo</dd>
+          </dl>
+        </div>
+        <p class="note">The real lots are being selected now. They are published here and on Instagram at @iconicyzma.</p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-head">
+      <h2>What the winner gets</h2>
+      <div class="body">
+        <p>The right to decide what a living person carries on their skin for the rest of their life, within the limits that person set.</p>
+        <p>Full documentation of the work: photos and video of the session, the healed tattoo, and a certificate signed by the participant and the artist. The winner may attend the session in Berlin or stay anonymous.</p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-head">
+      <h2>Precedents</h2>
+      <div class="prec">
+        <article><div class="yr">2008</div><h3>Wim Delvoye, “Tim”</h3><p>A tattoo on Tim Steiner’s back was sold to collector Rik Reinking for €150,000. Steiner received a third of the price and shows his back in museums.</p></article>
+        <article><div class="yr">2024</div><h3>Flatz, “To Risk One’s Own Skin”</h3><p>Twelve pieces of the artist’s tattooed skin were to be auctioned by Christie’s in Munich. A collector bought all of them before the sale.</p></article>
+      </div>
+    </div>
+  </section>
+
+  <section id="register">
+    <div class="reg">
+      <h3>Register to bid</h3>
+      <p>Send one short message with your name and country. Bidding runs 30 November – 6 December 2026, and registered bidders see the lots 24 hours before they go public.</p>
+      <div class="ways">
+        <div class="way"><span class="k">Instagram</span><span class="v">@iconicyzma</span><button class="copy" type="button" data-copy="@iconicyzma">Copy</button><a class="note" href="https://instagram.com/iconicyzma" target="_blank" rel="noopener">Open Instagram</a></div>
+        <div class="way"><span class="k">Email</span><span class="v">slavasolen@gmail.com</span><button class="copy" type="button" data-copy="slavasolen@gmail.com">Copy</button></div>
+      </div>
+      <p class="msg" id="msg">BID
+Name:
+Country:
+Instagram (optional):</p>
+      <button class="copy" type="button" data-copy-el="msg">Copy the message</button>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-head">
+      <h2>Rules</h2>
+      <ul class="rules">
+        <li>Participants are 21 or older and set their own limits. A design outside those limits is refused.</li>
+        <li>The participant can refuse any design without giving a reason. The winner can then send a new one within 3 days.</li>
+        <li>If the winner does not pay within 48 hours after a yes, the lot goes to the next highest bid.</li>
+        <li>Only registered bidders can bid. Each bid is confirmed by direct message.</li>
+        <li>All tattoos are done in Berlin, in a professional tattoo studio, with single-use sterile equipment.</li>
+      </ul>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-head">
+      <h2>The artist</h2>
+      <div class="body">
+        <p><b>Slava (Vladislava Ivanova)</b> is a Berlin-based artist and tattoo artist with a background in ecology and science-art. Her work deals with the body, digital privacy and surveillance.</p>
+        <p class="note">Art: @iconicyzma · Tattoo: @yzmatattoo · slavasolen@gmail.com</p>
+      </div>
+    </div>
+  </section>
+
+  <footer><span>Skin Auction · Berlin 2026</span><span>slavasolen@gmail.com</span></footer>
+</div>
+
+<script>
+function toast(t){const d=document.createElement("div");d.className="toast";d.textContent=t;document.body.appendChild(d);setTimeout(()=>d.remove(),1400)}
+function sel(text){const ta=document.createElement("textarea");ta.value=text;document.body.appendChild(ta);ta.select();try{document.execCommand("copy");toast("Copied")}catch(e){toast("Select the text and copy it")}ta.remove()}
+document.addEventListener("click",e=>{
+  const b=e.target.closest("[data-copy],[data-copy-el]"); if(!b) return;
+  const text=b.dataset.copy || document.getElementById(b.dataset.copyEl).textContent;
+  if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(text).then(()=>toast("Copied"),()=>sel(text))}else sel(text);
+});
+</script>
+
+</body></html>
