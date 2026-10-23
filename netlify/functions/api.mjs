@@ -45,6 +45,7 @@ export async function register(store, b) {
       const e = await store.get("bidder/" + h, { type: "json" });
       return { num: e.num, isNew: false };
     }
+    await store.setJSON(`reg/${Date.now()}-${num}`, {}, { onlyIfNew: true });
     return { num, isNew: true };
   }
   return { error: "Could not assign a paddle number. Try again." };
@@ -57,7 +58,10 @@ export async function board(store, now = Date.now()) {
     const bids = await lotBids(store, l.no);
     lots[l.no] = { count: bids.length, bidders: new Set(bids.map((x) => x.num)).size, bids: bids.slice(0, 12) };
   }
-  return { now, open: OPEN, close: CLOSE, bidders: blobs.length, lots };
+  const regs = (await store.list({ prefix: "reg/" })).blobs
+    .map(({ key }) => { const [t, num] = key.slice(4).split("-").map(Number); return { num, t }; })
+    .sort((a, b) => b.t - a.t).slice(0, 20);
+  return { now, open: OPEN, close: CLOSE, bidders: blobs.length, regs, lots };
 }
 
 export async function bid(store, b, now = Date.now()) {
