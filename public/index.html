@@ -102,7 +102,11 @@ input:focus{border-color:var(--fg);outline:none}
 .board .row:first-child{background:#2a2410;box-shadow:inset 3px 0 0 var(--gold)}
 .board .row.me{box-shadow:inset 3px 0 0 var(--go)}
 .board .row span{color:var(--muted);font-size:12px}
+.board .row i{font-style:normal;font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--go);border:1px solid var(--go);padding:0 4px;margin-left:4px}
 .board .row em{font-style:normal;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.paddle{display:flex;justify-content:space-between;align-items:baseline;background:#5fa83a1a;border:1px solid #5fa83a55;padding:8px 12px;font-family:var(--f-head);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.paddle b{font-size:24px;color:var(--fg);letter-spacing:.02em}
+.live{color:#ff5a4f}
 .note{font-size:11px;color:var(--dim);line-height:1.5}
 .tag{display:inline-block;font-size:10px;letter-spacing:.08em;text-transform:uppercase;border:1px solid var(--dim);color:var(--muted);padding:0 5px;margin-left:6px;vertical-align:1px}
 
@@ -128,7 +132,7 @@ input:focus{border-color:var(--fg);outline:none}
   <header class="top">
     <div class="logo"><i></i>Skin Auction</div>
     <nav class="tabs" aria-label="Sections"><a class="on" href="/">Inspect</a><a href="#inv">Lots</a><a href="about.html#rules">Rules</a><a href="about.html">About</a></nav>
-    <div class="clock"><span>Bidding opens 30.11</span><b id="cd">--d --:--:--</b><span>Worldwide</span></div>
+    <div class="clock"><span id="cdlab">Bidding opens in</span><b id="cd">--d --:--:--</b><span><b id="nbid">0</b> bidders</span></div>
   </header>
 
   <div class="stage">
@@ -161,9 +165,10 @@ input:focus{border-color:var(--fg);outline:none}
         </div>
         <div class="tier" id="tier"></div>
         <form id="f" name="bid" method="POST" data-netlify="true" netlify-honeypot="bot-field" novalidate>
-          <input type="hidden" name="form-name" value="bid"><input type="hidden" name="lot" id="flot">
+          <input type="hidden" name="form-name" value="bid"><input type="hidden" name="lot" id="flot"><input type="hidden" name="paddle" id="fpaddle"><input type="hidden" name="kind" id="fkind">
           <p hidden><label>Leave empty <input name="bot-field"></label></p>
-          <label for="amt">Your bid, €
+          <div class="paddle" id="mypad" hidden>Your paddle <b id="mynum"></b></div>
+          <label for="amt" id="amtrow">Your bid, €
             <div class="amt">
               <input type="number" id="amt" name="bid_eur" inputmode="numeric" min="1" step="1">
               <button type="button" data-add="10">+10</button>
@@ -176,14 +181,14 @@ input:focus{border-color:var(--fg);outline:none}
           <label for="contact">Instagram or email<input type="text" id="contact" name="contact" maxlength="80" placeholder="@handle or you@mail.com"></label>
           <label class="check" for="c21"><input type="checkbox" id="c21" name="age_21" value="yes"> I am 21 or older</label>
           <label class="check" for="crules"><input type="checkbox" id="crules" name="rules" value="yes"> I pay within 48 h if I win. The tattoo is done by a professional studio.</label>
-          <button class="go" type="submit">Place bid</button>
+          <button class="go" id="go" type="submit">Place bid</button>
           <div class="msg" id="msg" hidden></div>
         </form>
         <div>
           <div class="ph" style="padding:0 0 6px">Top bids <small id="boardnote"></small></div>
           <div class="board" id="board"></div>
         </div>
-        <p class="note">Lots are still being finalised and more are coming before 30 Nov. Bids placed now are pre-registrations; each one is confirmed by email or Instagram DM. Every seller can refuse a design. <a href="about.html#rules" style="color:inherit">Rules</a></p>
+        <p class="note">Every bidder gets a paddle number. Only paddle numbers, amounts and times are public; names and contacts stay private. Bid with the same Instagram or email to keep your number. More lots are coming before 30 Nov. The winner pays within 48 h, and every seller can refuse a design. <a href="about.html#rules" style="color:inherit">Rules</a></p>
       </div>
     </aside>
   </div>
@@ -204,14 +209,12 @@ const RAR=[
   {n:"Covert",c:"--r-covert",at:2500},
   {n:"Contraband",c:"--r-contraband",at:5000}
 ];
-const LOTS=[
-  {no:"01",part:"Right Thigh",        p:[-0.11,0.62, 0.08],tile:10,size:"10–15 cm",       float:0.21, start:100, seller:"@linaschriever · Berlin",          off:"portraits, faces"},
-  {no:"02",part:"Back",               p:[ 0.00,1.30,-0.13],tile:11,size:"up to 25 cm",    float:0.04, start:100, seller:"Participant 02 · Berlin",         off:"political content, names, faces"},
-  {no:"03",part:"Outer Thigh · Cover-up",p:[-0.17,0.72,0.00],tile:7,size:"over the old tattoo + above and below",float:0.62,start:null,seller:"Participant 03 · Berlin",off:"to be announced"},
-  {no:"04",part:"Butt, Knee or Ankle",p:[-0.11,0.48, 0.07],tile:2, size:"up to 10 × 10 cm",float:0.009,start:111, seller:"@louis.difadv · Friedrichshain",   off:"faces of real people, hate symbols"},
-  {no:"05",part:"Left Calf",          p:[ 0.11,0.33,-0.06],tile:8, size:"to be announced",float:0.10, start:null,seller:"YZMA · the artist",              off:"hate symbols"}
-];
-LOTS.forEach(l=>{l.board=[]});
+let LOTS=[];
+let ST={open:Date.parse("2026-11-30T00:00:00+01:00"),close:Date.parse("2026-12-06T20:00:00+01:00"),skew:0,bidders:0};
+const now=()=>Date.now()+ST.skew;
+const phase=()=>now()<ST.open?"pre":now()>ST.close?"closed":"open";
+let MY=null;try{MY=+localStorage.getItem("paddle")||null}catch(e){}
+const ago=t=>{const s=Math.max(0,(now()-t)/1000|0);return s<60?s+"s ago":s<3600?(s/60|0)+"m ago":s<86400?(s/3600|0)+"h ago":(s/86400|0)+"d ago"};
 
 const rarOf=v=>{let r=RAR[0];for(const x of RAR)if(v>=x.at)r=x;return r};
 const nextOf=v=>RAR.find(x=>x.at>v);
@@ -225,6 +228,7 @@ const tilePos=t=>`${(t%4)*100/3}% ${Math.floor(t/4)*100/3}%`;
 
 /* ---------- UI ---------- */
 let sel=0;
+function boot(){
 const $=id=>document.getElementById(id);
 const inv=$("inv");
 LOTS.forEach((l,i)=>{
@@ -237,7 +241,7 @@ function paintTile(l){
   const r=rarOf(topBid(l));l.el.style.setProperty("--rc",`var(${r.c})`);
   l.el.querySelector(".px").textContent=eur(topBid(l));
 }
-function select(i,turn){
+function select(i,turn,keep){
   sel=i;const l=LOTS[i],t=topBid(l),r=rarOf(t),nx=nextOf(t);
   LOTS.forEach((x,k)=>x.el.classList.toggle("sel",k===i));
   document.documentElement.style.setProperty("--rc",`var(${r.c})`);
@@ -248,40 +252,56 @@ function select(i,turn){
   $("clb").textContent=`Lot ${l.no} · ${eur(t)}`;
   $("sheetlot").textContent=`Lot ${l.no} · ${l.part}`;
   $("top").textContent=eur(t);
-  const mn=minBid(l);$("toplab").textContent=l.board.length?"Top bid":"Start price";$("boardnote").textContent=l.board.length?"":"bidding opens 30.11";$("minb").textContent=eur(mn);
-  $("amt").min=mn||1;$("amt").value=mn||"";
+  const mn=minBid(l),ph=phase();$("toplab").textContent=l.board.length?"Top bid":"Start price";$("minb").textContent=eur(mn);
+  $("boardnote").innerHTML=ph==="pre"?"bidding opens 30.11":ph==="open"?`<span class="live">● Live</span> · ${l.count||0} bids · ${l.nb||0} bidders`:`final · ${l.count||0} bids`;
+  $("amt").min=mn||1;if(!keep||!(+$("amt").value>=mn))$("amt").value=mn||"";
+  $("amtrow").hidden=ph!=="open";const go=$("go");go.textContent=ph==="pre"?"Get paddle number":ph==="open"?"Place bid":"Bidding closed";go.disabled=ph==="closed";
+  $("mypad").hidden=!MY;$("mynum").textContent=MY?"#"+MY:"";
   $("tier").innerHTML=nx?`Next grade <b style="color:var(${nx.c})">${nx.n}</b> at €${nx.at.toLocaleString("en")}`:`Top grade reached`;
-  $("board").innerHTML=l.board.slice(0,6).map((b,k)=>`<div class="row${b.me?" me":""}"><span>${k+1}</span><em>${esc(b.name)} <span>${esc(b.cc)}</span></em><b>€${b.v.toLocaleString("en")}</b></div>`).join("")||`<div class="row" style="background:var(--panel2);box-shadow:none"><span>–</span><em>No bids yet</em><b></b></div>`;
-  $("msg").hidden=true;
-  if(window.B)B.focus(i,turn);
+  $("board").innerHTML=l.board.slice(0,8).map((b,k)=>`<div class="row${b.num===MY?" me":""}"><span>${k+1}</span><em>Paddle #${b.num}${b.num===MY?"<i>you</i>":""} <span>${ago(b.t)}</span></em><b>€${b.v.toLocaleString("en")}</b></div>`).join("")||`<div class="row" style="background:var(--panel2);box-shadow:none"><span>–</span><em>No bids yet</em><b></b></div>`;
+  if(!keep)$("msg").hidden=true;
+  if(window.B&&!keep)B.focus(i,turn);else if(window.B)B.recolor(i);
 }
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 document.querySelectorAll("[data-add]").forEach(b=>b.addEventListener("click",()=>{const a=$("amt");a.value=(+a.value||+a.min)+ +b.dataset.add}));
 $("f").addEventListener("submit",e=>{
-  e.preventDefault();const l=LOTS[sel],v=Math.round(+$("amt").value),mn=minBid(l),m=$("msg");
+  e.preventDefault();const l=LOTS[sel],v=Math.round(+$("amt").value),mn=minBid(l),m=$("msg"),ph=phase();
   const err=t=>{m.className="msg err";m.textContent=t;m.hidden=false};
-  if(!l.start&&!l.board.length)return err("The start price for this lot is not set yet. Check back soon.");
-  if(!(v>=mn))return err(`Bid at least €${mn.toLocaleString("en")}.`);
+  if(ph==="closed")return err("Bidding has closed.");
+  if(ph==="open"){
+    if(!l.start&&!l.board.length)return err("The start price for this lot is not set yet. Check back soon.");
+    if(!(v>=mn))return err(`Bid at least €${mn.toLocaleString("en")}.`);
+  }
   if(!$("nick").value.trim())return err("Add a name or nickname.");
   if(!$("contact").value.trim())return err("Add your Instagram or email so we can reach you if you win.");
   if(!$("c21").checked||!$("crules").checked)return err("Confirm that you are 21+ and accept the rules.");
-  $("flot").value=`Lot ${l.no} · ${l.part}`;
-  const btn=$("f").querySelector(".go");btn.disabled=true;
-  fetch("/",{method:"POST",headers:{"Content-Type":"application/x-www-form-urlencoded"},body:new URLSearchParams(new FormData($("f"))).toString()})
-   .then(r=>{if(!r.ok)throw new Error(r.status);
-     l.board.unshift({name:$("nick").value.trim(),cc:($("country").value.trim()||"—").slice(0,14),v,me:true});
-     paintTile(l);select(sel,false);
-     m.className="msg";m.textContent=`Bid of €${v.toLocaleString("en")} on Lot ${l.no} registered. We will confirm it by email or DM.`;m.hidden=false})
-   .catch(()=>err("Could not send the bid. Try again, or DM @iconicyzma."))
-   .finally(()=>{btn.disabled=false});
+  const body={lot:l.no,amount:v,name:$("nick").value,country:$("country").value,contact:$("contact").value,age_21:$("c21").checked?"yes":"",rules:$("crules").checked?"yes":"","bot-field":$("f").elements["bot-field"].value};
+  const go=$("go");go.disabled=true;
+  fetch(ph==="open"?"/api/bid":"/api/register",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify(body)})
+   .then(async r=>{const d=await r.json().catch(()=>({}));if(!r.ok||d.error){const x=new Error(d.error||"Could not send. Try again.");x.min=d.min;throw x}return d})
+   .then(d=>{
+     MY=d.num;try{localStorage.setItem("paddle",String(d.num))}catch(_){}
+     $("flot").value=`Lot ${l.no} · ${l.part}`;$("fpaddle").value=d.num;$("fkind").value=ph==="open"?"bid":"register";
+     fetch("/",{method:"POST",headers:{"Content-Type":"application/x-www-form-urlencoded"},body:new URLSearchParams(new FormData($("f"))).toString()}).catch(()=>{});
+     if(ph==="open"){l.board=d.bids;l.count=d.count;paintTile(l)}
+     select(sel,false,true);
+     m.className="msg";m.textContent=ph==="open"?`Bid of €${v.toLocaleString("en")} placed as paddle #${d.num}.`:`Your paddle number is #${d.num}. Bidding opens on 30 November: bid here with the same Instagram or email.`;m.hidden=false;
+   })
+   .catch(x=>{err(x.message);if(x.min){$("amt").value=x.min}poll()})
+   .finally(()=>{go.disabled=phase()==="closed"});
 });
 LOTS.forEach(paintTile);
 select(0,false);
 
 // countdown
-const OPEN=new Date("2026-11-30T00:00:00+01:00");
-function tick(){let s=Math.max(0,(OPEN-new Date())/1000|0);const d=s/86400|0;s%=86400;const p=n=>String(n).padStart(2,"0");$("cd").textContent=`${d}d ${p(s/3600|0)}:${p((s%3600)/60|0)}:${p(s%60)}`}
+function tick(){const ph=phase(),to=ph==="pre"?ST.open:ST.close;let s=Math.max(0,(to-now())/1000|0);const d=s/86400|0;s%=86400;const p=n=>String(n).padStart(2,"0");
+  $("cdlab").innerHTML=ph==="pre"?"Bidding opens in":ph==="open"?'<span class="live">● Live</span> · closes in':"Auction closed";
+  $("cd").textContent=ph==="closed"?"":`${d}d ${p(s/3600|0)}:${p((s%3600)/60|0)}:${p(s%60)}`;$("nbid").textContent=ST.bidders}
 tick();setInterval(tick,1000);
+let lastPh=phase();
+window.applyBoard=d=>{ST.skew=d.now-Date.now();ST.open=d.open;ST.close=d.close;ST.bidders=d.bidders;
+  LOTS.forEach(l=>{const x=d.lots[l.no];if(x){l.board=x.bids;l.count=x.count;l.nb=x.bidders}});LOTS.forEach(paintTile);select(sel,false,true);tick()};
+setInterval(()=>{const ph=phase();if(ph!==lastPh){lastPh=ph;select(sel,false,true)}},1000);
 
 /* ---------- 3D ---------- */
 (function(){
@@ -398,7 +418,7 @@ diffuseColor.rgb=col;`);
 
   const wp=new THREE.Vector3();
   const posed=(i,v)=>{v.fromBufferAttribute(bindPos,i);surface.boneTransform(i,v);return v.applyMatrix4(surface.matrixWorld)};
-  window.B={focus(i,turn){
+  window.B={recolor(i){if(seeds.length)uni.uRC.value.set(css(rarOf(topBid(LOTS[i])).c))},focus(i,turn){
     if(!seeds.length)return;
     uni.uSel.value=i;uni.uRC.value.set(css(rarOf(topBid(LOTS[i])).c));
     if(turn){const s=pivot.worldToLocal(posed(anchors[i],new THREE.Vector3()));let a=-Math.atan2(s.x,s.z)+0.25;while(a-rotY>Math.PI)a-=2*Math.PI;while(a-rotY<-Math.PI)a+=2*Math.PI;rotTarget=a}
@@ -425,6 +445,12 @@ diffuseColor.rgb=col;`);
     }
   })();
 })();
+poll();
+}
+function poll(){if(document.hidden||!window.applyBoard)return;fetch("/api/board",{cache:"no-store"}).then(r=>r.ok?r.json():null).then(d=>{if(d&&d.lots)window.applyBoard(d)}).catch(()=>{})}
+(function loopPoll(){setTimeout(()=>{poll();loopPoll()},phase()==="open"?4000:30000)})();
+document.addEventListener("visibilitychange",poll);
+fetch("assets/lots.json",{cache:"no-cache"}).then(r=>r.json()).then(d=>{LOTS=d;LOTS.forEach(l=>{l.board=[];l.count=0;l.nb=0});boot()}).catch(()=>{document.getElementById("loading").textContent="Could not load the lots. Reload the page."});
 </script>
 
 </body></html>
