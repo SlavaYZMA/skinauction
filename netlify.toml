@@ -5,3 +5,9 @@
 [functions]
   directory = "netlify/functions"
   node_bundler = "esbuild"
+
+# The clean auction page is now the homepage; the 3D game page stays at /game.html.
+[[redirects]]
+  from = "/auction.html"
+  to = "/"
+  status = 301

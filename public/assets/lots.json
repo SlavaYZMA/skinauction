@@ -24,7 +24,11 @@
    "part": "Rechter Oberschenkel",
    "size": "10–15 cm",
    "off": "Porträts, Gesichter"
-  }
+  },
+  "est": [
+   600,
+   1200
+  ]
  },
  {
   "no": "02",
@@ -51,7 +55,11 @@
    "part": "Rücken",
    "size": "bis 25 cm",
    "off": "politische Inhalte, Namen, Gesichter"
-  }
+  },
+  "est": [
+   1200,
+   2500
+  ]
  },
  {
   "no": "03",
@@ -105,7 +113,11 @@
    "part": "Po, Knie oder Knöchel",
    "size": "bis 10 × 10 cm",
    "off": "Gesichter realer Menschen, Hasssymbole"
-  }
+  },
+  "est": [
+   400,
+   800
+  ]
  },
  {
   "no": "05",

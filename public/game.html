@@ -1,0 +1,454 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="description" content="People in Berlin auction a spot of their own skin. The highest bidder decides what will be tattooed there. Bidding 30 Nov – 6 Dec 2026.">
+<meta property="og:title" content="Skin Auction"><meta property="og:description" content="People in Berlin auction a spot of their own skin. Bidding 30 Nov – 6 Dec 2026, worldwide."><meta property="og:image" content="https://skinauction.org/lot.jpg">
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}</style>
+<title>Skin Auction</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="/assets/fonts/fonts.css">
+<style>
+/* Layout: game inspect screen. Inventory of lots left, rotatable stitched body centre, bid sheet right; stacks on phones. Single dark look by design (game UI). */
+:root{
+  color-scheme:dark;
+  --bg0:#0c1115; --bg1:#1a242c; --panel:rgba(16,22,28,.86); --panel2:#141c23; --edge:rgba(255,255,255,.07);
+  --fg:#e9eef2; --muted:#8796a3; --dim:#55626d; --go:#5fa83a; --go2:#4b8a2c; --gold:#e4ae39;
+  --r-consumer:#b0c3d9; --r-industrial:#5e98d9; --r-milspec:#4b69ff; --r-restricted:#8847ff; --r-classified:#d32ce6; --r-covert:#eb4b4b; --r-contraband:#e4ae39;
+  --f-head:"Barlow Condensed","Arial Narrow",system-ui,sans-serif;
+  --f-body:"Barlow",system-ui,-apple-system,"Segoe UI",sans-serif;
+}
+*,*::before,*::after{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{height:100%}
+body{background:radial-gradient(120% 90% at 50% 30%,var(--bg1) 0%,var(--bg0) 70%) fixed,var(--bg0);color:var(--fg);font-family:var(--f-body);font-size:14px;line-height:1.4}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bg0)}
+button,input,select{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+
+.app{height:100%;display:grid;grid-template-rows:auto minmax(0,1fr)}
+.top{display:flex;align-items:center;gap:22px;padding-block:10px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));border-bottom:1px solid var(--edge);background:linear-gradient(#0a0f13cc,#0a0f1300);flex-wrap:wrap}
+.logo{font-family:var(--f-head);font-weight:700;font-size:24px;letter-spacing:.06em;text-transform:uppercase;display:flex;align-items:center;gap:8px}
+.logo i{display:inline-block;width:18px;height:18px;background:var(--fg);clip-path:polygon(0 0,100% 0,100% 30%,40% 30%,40% 100%,0 100%)}
+.tabs{display:flex;gap:4px}
+.tabs a{text-decoration:none;font-family:var(--f-head);font-weight:600;font-size:15px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);padding:6px 10px}
+.tabs a.on{color:var(--fg);box-shadow:inset 0 -2px 0 var(--fg)}
+.clock{margin-left:auto;font-family:var(--f-head);font-size:15px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);display:flex;gap:10px;align-items:baseline}
+.clock b{color:var(--fg);font-weight:600;font-variant-numeric:tabular-nums}
+
+.stage{display:grid;grid-template-columns:280px minmax(0,1fr) 340px;min-height:0}
+.panel{background:var(--panel);border-right:1px solid var(--edge);display:flex;flex-direction:column;min-height:0;min-width:0}
+.panel.right{border-right:0;border-left:1px solid var(--edge)}
+.ph{font-family:var(--f-head);font-weight:600;font-size:15px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);padding:14px 16px 10px;display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.ph small{font-family:var(--f-body);font-size:11px;letter-spacing:.04em;color:var(--dim);text-transform:none}
+
+/* inventory */
+.inv{overflow:auto;padding:0 12px 16px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;align-content:start}
+.tile{position:relative;text-align:left;background:linear-gradient(180deg,#26313a,#161e25);border:1px solid var(--edge);padding:0;cursor:pointer;display:grid;grid-template-rows:auto auto;overflow:hidden}
+.tile:hover{border-color:rgba(255,255,255,.22)}
+.tile.sel{border-color:var(--fg)}
+.tile .sw{aspect-ratio:4/3;max-width:100%;background-image:var(--atlas);background-size:400% 400%;position:relative;-webkit-mask:radial-gradient(70% 65% at 50% 50%,#000 60%,transparent 100%);mask:radial-gradient(70% 65% at 50% 50%,#000 60%,transparent 100%)}
+.tile .sw::after{content:"";position:absolute;inset:18% 22%;border:1.5px dashed rgba(20,10,10,.55);border-radius:40%}
+.tile .px{position:absolute;top:6px;left:7px;font-family:var(--f-head);font-weight:600;font-size:14px;text-shadow:0 1px 2px #000}
+.tile .no{position:absolute;top:6px;right:7px;font-family:var(--f-head);font-size:12px;color:var(--fg);letter-spacing:.06em;text-shadow:0 1px 2px #000,0 0 6px #000}
+.tile .nm{padding:6px 8px 8px;display:grid;gap:1px;border-bottom:3px solid var(--rc,var(--r-consumer))}
+.tile .nm span{font-size:11px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tile .nm b{font-weight:600;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+/* view */
+.view{position:relative;min-height:0;min-width:0;overflow:hidden}
+.view canvas{position:absolute;inset:0;width:100%;height:100%;touch-action:none;cursor:grab}
+.view canvas:active{cursor:grabbing}
+.loading{position:absolute;inset:0;display:grid;place-items:center;font-family:var(--f-head);letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.hint{position:absolute;top:14px;left:50%;transform:translateX(-50%);font-family:var(--f-head);font-size:13px;letter-spacing:.12em;text-transform:uppercase;color:var(--dim);white-space:nowrap;pointer-events:none}
+.rot{position:absolute;bottom:150px;display:grid;place-items:center;width:40px;height:40px;background:rgba(10,14,18,.6);border:1px solid var(--edge);cursor:pointer;font-size:18px}
+.rot.l{left:max(14px,env(safe-area-inset-left,0px))} .rot.r{right:14px}
+.callout{position:absolute;left:0;top:0;pointer-events:none;will-change:transform}
+.callout .dot{position:absolute;width:10px;height:10px;margin:-5px 0 0 -5px;border-radius:50%;border:2px solid var(--rc);box-shadow:0 0 12px var(--rc)}
+.callout .ln{position:absolute;height:1px;background:var(--rc);transform-origin:0 0;width:70px;transform:rotate(-35deg)}
+.callout .lb{position:absolute;left:58px;top:-62px;background:rgba(8,12,15,.85);border-left:3px solid var(--rc);padding:5px 9px;font-family:var(--f-head);font-size:14px;letter-spacing:.05em;text-transform:uppercase;white-space:nowrap}
+.plate{position:absolute;left:0;right:0;bottom:0;padding:18px max(16px,env(safe-area-inset-left,0px)) 18px;background:linear-gradient(transparent,rgba(6,9,12,.92) 45%);display:grid;gap:4px;justify-items:center;text-align:center}
+.plate h2{font-family:var(--f-head);font-weight:600;font-size:clamp(22px,3vw,32px);margin:0;letter-spacing:.02em;text-wrap:balance}
+.plate h2 .star{color:var(--gold)}
+.plate .rar{font-family:var(--f-head);font-size:15px;letter-spacing:.08em;text-transform:uppercase;color:var(--rc)}
+.stats{display:flex;flex-wrap:wrap;justify-content:center;gap:4px 18px;font-size:12px;color:var(--muted)}
+.stats b{color:var(--fg);font-weight:500;font-variant-numeric:tabular-nums}
+.wear{width:min(320px,80%);height:5px;background:linear-gradient(90deg,#3c9a4a 0 7%,#7cbb3e 7% 15%,#d2c13a 15% 38%,#e08b2c 38% 45%,#d0412f 45%);position:relative;margin-top:4px}
+.wear i{position:absolute;top:-4px;width:2px;height:13px;background:var(--fg)}
+
+/* bid sheet */
+.sheet{overflow:auto;padding:0 16px 18px;display:grid;gap:14px;align-content:start}
+.cur{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.cur div{background:var(--panel2);border:1px solid var(--edge);padding:10px 12px;display:grid;gap:2px}
+.cur span{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}
+.cur b{font-family:var(--f-head);font-weight:600;font-size:26px;font-variant-numeric:tabular-nums}
+.tier{font-size:12px;color:var(--muted)}
+.tier b{color:var(--fg);font-weight:600}
+form{display:grid;gap:10px}
+label{display:grid;gap:4px;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+input[type=text],input[type=number],input[type=email]{background:#0b1014;border:1px solid #2a353e;padding:9px 10px;font-size:15px;color:var(--fg);letter-spacing:0;text-transform:none;width:100%;min-width:0}
+input:focus{border-color:var(--fg);outline:none}
+.amt{display:grid;grid-template-columns:minmax(0,1fr) auto auto auto;gap:6px}
+.amt button{background:#232e37;border:1px solid var(--edge);padding:0 10px;cursor:pointer;font-family:var(--f-head);font-size:15px}
+.amt button:hover{background:#2c3944}
+.check{display:flex;gap:8px;align-items:flex-start;text-transform:none;letter-spacing:0;font-size:13px;color:var(--fg)}
+.check input{margin-top:3px;accent-color:var(--go)}
+.go{background:linear-gradient(var(--go),var(--go2));border:0;padding:13px;font-family:var(--f-head);font-weight:700;font-size:18px;letter-spacing:.12em;text-transform:uppercase;cursor:pointer;color:#fff}
+.go:hover{filter:brightness(1.1)}
+.msg{font-size:13px;padding:8px 10px;border-left:3px solid var(--go);background:#5fa83a1a}
+.msg.err{border-color:var(--r-covert);background:#eb4b4b1a}
+.board{display:grid;gap:2px}
+.board .row{display:grid;grid-template-columns:24px minmax(0,1fr) auto;gap:8px;padding:6px 8px;background:var(--panel2);font-variant-numeric:tabular-nums;align-items:baseline}
+.board .row:first-child{background:#2a2410;box-shadow:inset 3px 0 0 var(--gold)}
+.board .row.me{box-shadow:inset 3px 0 0 var(--go)}
+.board .row span{color:var(--muted);font-size:12px}
+.board .row i{font-style:normal;font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--go);border:1px solid var(--go);padding:0 4px;margin-left:4px}
+.board .row em{font-style:normal;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.paddle{display:flex;justify-content:space-between;align-items:baseline;background:#5fa83a1a;border:1px solid #5fa83a55;padding:8px 12px;font-family:var(--f-head);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.paddle b{font-size:24px;color:var(--fg);letter-spacing:.02em}
+.live{color:#ff5a4f}
+.note{font-size:11px;color:var(--dim);line-height:1.5}
+.tag{display:inline-block;font-size:10px;letter-spacing:.08em;text-transform:uppercase;border:1px solid var(--dim);color:var(--muted);padding:0 5px;margin-left:6px;vertical-align:1px}
+
+@media (max-width:980px){
+  html,body{height:auto}
+  .app{height:auto;display:block}
+  .stage{display:flex;flex-direction:column}
+  .view{order:1;height:64svh;min-height:420px}
+  .panel.left{order:2;border-right:0;border-top:1px solid var(--edge)}
+  .panel.right{order:3;border-left:0;border-top:1px solid var(--edge)}
+  .inv{grid-template-columns:none;grid-auto-flow:column;grid-auto-columns:140px;overflow-x:auto;padding-bottom:14px}
+  .tabs{display:none}
+  .clock{margin-left:0;width:100%;font-size:13px}
+  .clock span:last-child{display:none}
+  .rot{bottom:130px}
+  .callout .lb{font-size:12px}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head><body>
+
+<div class="app" style="--atlas:url(assets/skin.jpg)">
+  <header class="top">
+    <div class="logo"><i></i>Skin Auction</div>
+    <nav class="tabs" aria-label="Sections"><a class="on" href="/">Inspect</a><a href="#inv">Lots</a><a href="about.html#rules">Rules</a><a href="about.html">About</a></nav>
+    <div class="clock"><span id="cdlab">Bidding opens in</span><b id="cd">--d --:--:--</b><span><b id="nbid">0</b> bidders</span></div>
+  </header>
+
+  <div class="stage">
+    <aside class="panel left" aria-label="Lots">
+      <div class="ph">Inventory <small id="invc">5 lots · more coming</small></div>
+      <div class="inv" id="inv"></div>
+    </aside>
+
+    <section class="view" id="view" aria-label="Body, drag to rotate">
+      <canvas id="cv"></canvas>
+      <div class="loading" id="loading">Loading body…</div>
+      <div class="hint">Drag to rotate · tap a patch</div>
+      <button class="rot l" id="rl" type="button" aria-label="Rotate left">◀</button>
+      <button class="rot r" id="rr" type="button" aria-label="Rotate right">▶</button>
+      <div class="callout" id="callout" hidden><div class="ln"></div><div class="dot"></div><div class="lb" id="clb"></div></div>
+      <div class="plate" id="plate">
+        <h2 id="pname"></h2>
+        <div class="rar" id="prar"></div>
+        <div class="stats" id="pstats"></div>
+        <div class="wear" aria-hidden="true"><i id="pwear"></i></div>
+      </div>
+    </section>
+
+    <aside class="panel right" aria-label="Place a bid">
+      <div class="ph">Place bid <small id="sheetlot"></small></div>
+      <div class="sheet">
+        <div class="cur">
+          <div><span id="toplab">Top bid</span><b id="top">€0</b></div>
+          <div><span>Min. next bid</span><b id="minb">€0</b></div>
+        </div>
+        <div class="tier" id="tier"></div>
+        <form id="f" name="bid" method="POST" data-netlify="true" netlify-honeypot="bot-field" novalidate>
+          <input type="hidden" name="form-name" value="bid"><input type="hidden" name="lot" id="flot"><input type="hidden" name="paddle" id="fpaddle"><input type="hidden" name="kind" id="fkind">
+          <p hidden><label>Leave empty <input name="bot-field"></label></p>
+          <div class="paddle" id="mypad" hidden>Your paddle <b id="mynum"></b></div>
+          <label for="amt" id="amtrow">Your bid, €
+            <div class="amt">
+              <input type="number" id="amt" name="bid_eur" inputmode="numeric" min="1" step="1">
+              <button type="button" data-add="10">+10</button>
+              <button type="button" data-add="50">+50</button>
+              <button type="button" data-add="100">+100</button>
+            </div>
+          </label>
+          <label for="nick">Name or nickname<input type="text" id="nick" name="name" autocomplete="nickname" maxlength="40"></label>
+          <label for="country">Country<input type="text" id="country" name="country" autocomplete="country-name" maxlength="40"></label>
+          <label for="contact">Instagram or email<input type="text" id="contact" name="contact" maxlength="80" placeholder="@handle or you@mail.com"></label>
+          <label class="check" for="c21"><input type="checkbox" id="c21" name="age_21" value="yes"> I am 21 or older</label>
+          <label class="check" for="crules"><input type="checkbox" id="crules" name="rules" value="yes"> I pay within 48 h if I win. The tattoo is done by a professional studio.</label>
+          <button class="go" id="go" type="submit">Place bid</button>
+          <div class="msg" id="msg" hidden></div>
+        </form>
+        <div>
+          <div class="ph" style="padding:0 0 6px">Top bids <small id="boardnote"></small></div>
+          <div class="board" id="board"></div>
+        </div>
+        <p class="note">Every bidder gets a paddle number. Only paddle numbers, amounts and times are public; names and contacts stay private. Bid with the same Instagram or email to keep your number. More lots are coming before 30 Nov. The winner pays within 48 h, and every seller can refuse a design. <a href="about.html#rules" style="color:inherit">Rules</a></p>
+      </div>
+    </aside>
+  </div>
+</div>
+
+<script src="assets/three.min.js"></script>
+<script src="assets/GLTFLoader.js"></script>
+<script>
+const ATLAS_URL="assets/skin.jpg";
+
+/* ---------- data (placeholders) ---------- */
+const RAR=[
+  {n:"Consumer Grade",c:"--r-consumer",at:0},
+  {n:"Industrial Grade",c:"--r-industrial",at:100},
+  {n:"Mil-Spec",c:"--r-milspec",at:250},
+  {n:"Restricted",c:"--r-restricted",at:500},
+  {n:"Classified",c:"--r-classified",at:1000},
+  {n:"Covert",c:"--r-covert",at:2500},
+  {n:"Contraband",c:"--r-contraband",at:5000}
+];
+let LOTS=[];
+let ST={open:Date.parse("2026-11-30T00:00:00+01:00"),close:Date.parse("2026-12-06T20:00:00+01:00"),skew:0,bidders:0};
+const now=()=>Date.now()+ST.skew;
+const phase=()=>now()<ST.open?"pre":now()>ST.close?"closed":"open";
+let MY=null;try{MY=+localStorage.getItem("paddle")||null}catch(e){}
+const ago=t=>{const s=Math.max(0,(now()-t)/1000|0);return s<60?s+"s ago":s<3600?(s/60|0)+"m ago":s<86400?(s/3600|0)+"h ago":(s/86400|0)+"d ago"};
+
+const rarOf=v=>{let r=RAR[0];for(const x of RAR)if(v>=x.at)r=x;return r};
+const nextOf=v=>RAR.find(x=>x.at>v);
+const css=n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+const topBid=l=>l.board.length?l.board[0].v:(l.start||0);
+const eur=v=>v?"€"+v.toLocaleString("en"):"TBA";
+const minBid=l=>l.board.length?topBid(l)+step(topBid(l)):(l.start||0);
+const step=v=>Math.max(10,Math.ceil(v*0.05/5)*5);
+const wearName=f=>f<.07?"Factory New":f<.15?"Minimal Wear":f<.38?"Field-Tested":f<.45?"Well-Worn":"Battle-Scarred";
+const tilePos=t=>`${(t%4)*100/3}% ${Math.floor(t/4)*100/3}%`;
+
+/* ---------- UI ---------- */
+let sel=0;
+function boot(){
+const $=id=>document.getElementById(id);
+const inv=$("inv");
+LOTS.forEach((l,i)=>{
+  const b=document.createElement("button");b.type="button";b.className="tile";b.id="lot-"+l.no;
+  b.innerHTML=`<div class="sw" style="background-position:${tilePos(l.tile)}"></div><span class="px"></span><span class="no">LOT ${l.no}</span><div class="nm"><span>Human |</span><b>${l.part}</b></div>`;
+  b.addEventListener("click",()=>select(i,true));
+  inv.appendChild(b);l.el=b;
+});
+function paintTile(l){
+  const r=rarOf(topBid(l));l.el.style.setProperty("--rc",`var(${r.c})`);
+  l.el.querySelector(".px").textContent=eur(topBid(l));
+}
+function select(i,turn,keep){
+  sel=i;const l=LOTS[i],t=topBid(l),r=rarOf(t),nx=nextOf(t);
+  LOTS.forEach((x,k)=>x.el.classList.toggle("sel",k===i));
+  document.documentElement.style.setProperty("--rc",`var(${r.c})`);
+  $("pname").innerHTML=`<span class="star">★</span> Human | ${l.part}`;
+  $("prar").textContent=`${r.n} Skin · ${wearName(l.float)}`;
+  $("pstats").innerHTML=`<span>Lot <b>${l.no}</b></span><span>Float <b>${l.float.toFixed(4)}</b></span><span>Area <b>${l.size}</b></span><span>Seller <b>${l.seller}</b></span><span>Off-limits <b>${l.off}</b></span>`;
+  $("pwear").style.left=Math.min(99,l.float*100)+"%";
+  $("clb").textContent=`Lot ${l.no} · ${eur(t)}`;
+  $("sheetlot").textContent=`Lot ${l.no} · ${l.part}`;
+  $("top").textContent=eur(t);
+  const mn=minBid(l),ph=phase();$("toplab").textContent=l.board.length?"Top bid":"Start price";$("minb").textContent=eur(mn);
+  $("boardnote").innerHTML=ph==="pre"?"bidding opens 30.11":ph==="open"?`<span class="live">● Live</span> · ${l.count||0} bids · ${l.nb||0} bidders`:`final · ${l.count||0} bids`;
+  $("amt").min=mn||1;if(!keep||!(+$("amt").value>=mn))$("amt").value=mn||"";
+  $("amtrow").hidden=ph!=="open";const go=$("go");go.textContent=ph==="pre"?"Get paddle number":ph==="open"?"Place bid":"Bidding closed";go.disabled=ph==="closed";
+  $("mypad").hidden=!MY;$("mynum").textContent=MY?"#"+MY:"";
+  $("tier").innerHTML=nx?`Next grade <b style="color:var(${nx.c})">${nx.n}</b> at €${nx.at.toLocaleString("en")}`:`Top grade reached`;
+  $("board").innerHTML=l.board.slice(0,8).map((b,k)=>`<div class="row${b.num===MY?" me":""}"><span>${k+1}</span><em>Paddle #${b.num}${b.num===MY?"<i>you</i>":""} <span>${ago(b.t)}</span></em><b>€${b.v.toLocaleString("en")}</b></div>`).join("")||`<div class="row" style="background:var(--panel2);box-shadow:none"><span>–</span><em>No bids yet</em><b></b></div>`;
+  if(!keep)$("msg").hidden=true;
+  if(window.B&&!keep)B.focus(i,turn);else if(window.B)B.recolor(i);
+}
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+document.querySelectorAll("[data-add]").forEach(b=>b.addEventListener("click",()=>{const a=$("amt");a.value=(+a.value||+a.min)+ +b.dataset.add}));
+$("f").addEventListener("submit",e=>{
+  e.preventDefault();const l=LOTS[sel],v=Math.round(+$("amt").value),mn=minBid(l),m=$("msg"),ph=phase();
+  const err=t=>{m.className="msg err";m.textContent=t;m.hidden=false};
+  if(ph==="closed")return err("Bidding has closed.");
+  if(ph==="open"){
+    if(!l.start&&!l.board.length)return err("The start price for this lot is not set yet. Check back soon.");
+    if(!(v>=mn))return err(`Bid at least €${mn.toLocaleString("en")}.`);
+  }
+  if(!$("nick").value.trim())return err("Add a name or nickname.");
+  if(!$("contact").value.trim())return err("Add your Instagram or email so we can reach you if you win.");
+  if(!$("c21").checked||!$("crules").checked)return err("Confirm that you are 21+ and accept the rules.");
+  const body={lot:l.no,amount:v,name:$("nick").value,country:$("country").value,contact:$("contact").value,age_21:$("c21").checked?"yes":"",rules:$("crules").checked?"yes":"","bot-field":$("f").elements["bot-field"].value};
+  const go=$("go");go.disabled=true;
+  fetch(ph==="open"?"/api/bid":"/api/register",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify(body)})
+   .then(async r=>{const d=await r.json().catch(()=>({}));if(!r.ok||d.error){const x=new Error(d.error||"Could not send. Try again.");x.min=d.min;throw x}return d})
+   .then(d=>{
+     MY=d.num;try{localStorage.setItem("paddle",String(d.num))}catch(_){}
+     $("flot").value=`Lot ${l.no} · ${l.part}`;$("fpaddle").value=d.num;$("fkind").value=ph==="open"?"bid":"register";
+     fetch("/",{method:"POST",headers:{"Content-Type":"application/x-www-form-urlencoded"},body:new URLSearchParams(new FormData($("f"))).toString()}).catch(()=>{});
+     if(ph==="open"){l.board=d.bids;l.count=d.count;paintTile(l)}
+     select(sel,false,true);
+     m.className="msg";m.textContent=ph==="open"?`Bid of €${v.toLocaleString("en")} placed as paddle #${d.num}.`:`Your paddle number is #${d.num}. Bidding opens on 30 November: bid here with the same Instagram or email.`;m.hidden=false;
+   })
+   .catch(x=>{err(x.message);if(x.min){$("amt").value=x.min}poll()})
+   .finally(()=>{go.disabled=phase()==="closed"});
+});
+LOTS.forEach(paintTile);
+select(0,false);
+
+// countdown
+function tick(){const ph=phase(),to=ph==="pre"?ST.open:ST.close;let s=Math.max(0,(to-now())/1000|0);const d=s/86400|0;s%=86400;const p=n=>String(n).padStart(2,"0");
+  $("cdlab").innerHTML=ph==="pre"?"Bidding opens in":ph==="open"?'<span class="live">● Live</span> · closes in':"Auction closed";
+  $("cd").textContent=ph==="closed"?"":`${d}d ${p(s/3600|0)}:${p((s%3600)/60|0)}:${p(s%60)}`;$("nbid").textContent=ST.bidders}
+tick();setInterval(tick,1000);
+let lastPh=phase();
+window.applyBoard=d=>{ST.skew=d.now-Date.now();ST.open=d.open;ST.close=d.close;ST.bidders=d.bidders;
+  LOTS.forEach(l=>{const x=d.lots[l.no];if(x){l.board=x.bids;l.count=x.count;l.nb=x.bidders}});LOTS.forEach(paintTile);select(sel,false,true);tick()};
+setInterval(()=>{const ph=phase();if(ph!==lastPh){lastPh=ph;select(sel,false,true)}},1000);
+
+/* ---------- 3D ---------- */
+(function(){
+  if(!window.THREE||!THREE.GLTFLoader){$("loading").textContent="3D failed to load";return}
+  const view=$("view"),cv=$("cv");
+  const renderer=new THREE.WebGLRenderer({canvas:cv,antialias:true,alpha:true});
+  renderer.setPixelRatio(Math.min(2,devicePixelRatio));
+  renderer.outputEncoding=THREE.sRGBEncoding;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.05;
+  const scene=new THREE.Scene();
+  const cam=new THREE.PerspectiveCamera(26,1,0.1,50);
+  let camDist=4.9,camH=1.02,tgtH=0.92;
+  scene.add(new THREE.HemisphereLight(0xc4d6ea,0x1b1511,0.55));
+  const key=new THREE.DirectionalLight(0xfff0e0,1.7);key.position.set(2.2,3.2,3.2);scene.add(key);
+  const rim=new THREE.DirectionalLight(0x86b8ff,1.6);rim.position.set(-2.6,2.2,-3);scene.add(rim);
+  const fill=new THREE.DirectionalLight(0xffc4a0,0.45);fill.position.set(-2.5,0.8,2);scene.add(fill);
+
+  // floor: soft shadow + ring
+  const fc=document.createElement("canvas");fc.width=fc.height=256;const g=fc.getContext("2d");
+  const gr=g.createRadialGradient(128,128,0,128,128,128);gr.addColorStop(0,"rgba(0,0,0,.75)");gr.addColorStop(.45,"rgba(0,0,0,.35)");gr.addColorStop(1,"rgba(0,0,0,0)");
+  g.fillStyle=gr;g.fillRect(0,0,256,256);g.strokeStyle="rgba(170,200,230,.22)";g.lineWidth=1.5;g.beginPath();g.arc(128,128,112,0,7);g.stroke();
+  const floor=new THREE.Mesh(new THREE.PlaneGeometry(2.6,2.6),new THREE.MeshBasicMaterial({map:new THREE.CanvasTexture(fc),transparent:true,depthWrite:false}));
+  floor.rotation.x=-Math.PI/2;floor.position.y=0.002;scene.add(floor);
+
+  const pivot=new THREE.Group();scene.add(pivot);
+  const NS=76;
+  const uni={uSeeds:{value:[]},uTiles:{value:new Array(NS).fill(0)},uAtlas:{value:null},uSel:{value:0},uHover:{value:-1},uTime:{value:0},uRC:{value:new THREE.Color(1,1,1)}};
+
+  const tex=new THREE.TextureLoader().load(ATLAS_URL,()=>{});
+  tex.encoding=THREE.sRGBEncoding;tex.anisotropy=8;tex.generateMipmaps=true;uni.uAtlas.value=tex;
+
+  const mat=new THREE.MeshStandardMaterial({roughness:.62,metalness:0});
+  mat.onBeforeCompile=sh=>{
+    Object.assign(sh.uniforms,uni);
+    sh.vertexShader=sh.vertexShader.replace("#include <common>","#include <common>\nvarying vec3 vObj;varying vec3 vObjN;")
+      .replace("#include <begin_vertex>","#include <begin_vertex>\nvObj=position;vObjN=normal;");
+    sh.fragmentShader=sh.fragmentShader.replace("#include <common>",`#include <common>
+#define NS ${NS}
+varying vec3 vObj;varying vec3 vObjN;
+uniform vec3 uSeeds[NS];uniform float uTiles[NS];uniform sampler2D uAtlas;uniform float uSel;uniform float uHover;uniform float uTime;uniform vec3 uRC;
+vec3 h3(float n){return fract(sin(vec3(n*12.9898,n*78.233,n*37.719))*43758.5453);}
+vec2 tri(vec2 v){return abs(fract(v*.5)*2.-1.);}`)
+    .replace("#include <map_fragment>",`
+float d1=1e5,d2=1e5;vec3 s1=vec3(0.),s2=vec3(0.);float id=0.,tl=0.;
+for(int i=0;i<NS;i++){vec3 s=uSeeds[i];float d=distance(vObj,s);
+  if(d<d1){d2=d1;s2=s1;d1=d;s1=s;id=float(i);tl=uTiles[i];}else if(d<d2){d2=d;s2=s;}}
+float e=(d2*d2-d1*d1)/(2.*max(length(s2-s1),1e-4));
+vec3 n=normalize(vObjN);vec3 w=pow(abs(n),vec3(4.));w/=(w.x+w.y+w.z);
+vec2 o=vec2(mod(tl,4.),3.-floor(tl/4.))*.25+.006;
+vec3 q=vObj*3.4+h3(id+1.)*9.;
+vec3 col=texture2D(uAtlas,o+tri(q.zy)*.238).rgb*w.x+texture2D(uAtlas,o+tri(q.xz)*.238).rgb*w.y+texture2D(uAtlas,o+tri(q.xy)*.238).rgb*w.z;
+float infl=exp(-e/.0075);
+col=mix(col,col*vec3(1.18,.70,.66),infl*.5);
+vec3 dir=normalize(s2-s1);vec3 tg=normalize(cross(n,dir));
+float ph=abs(fract(dot(vObj,tg)*80.)-.5);
+float st=(1.-smoothstep(.010,.0125,e))*(1.-smoothstep(.07,.12,ph));
+float seam=1.-smoothstep(.0016,.003,e);
+col=mix(col,vec3(.035,.02,.02),max(seam*.92,st*.95));
+float isSel=1.-step(.5,abs(id-uSel));
+float isHov=(1.-step(.5,abs(id-uHover)))*(1.-isSel);
+float rimS=1.-smoothstep(.003,.016,e);
+col=mix(col,uRC,isSel*rimS*(.55+.35*sin(uTime*4.)));
+col+=uRC*isSel*.05;
+col=mix(col,vec3(1.),isHov*rimS*.35);
+diffuseColor.rgb=col;`);
+  };
+
+  let mixer=null,surface=null,bindPos=null,seeds=[],anchors=[],meshes=[];
+  new THREE.GLTFLoader().load("assets/body.glb",gltf=>{
+    const root=gltf.scene;
+    root.traverse(o=>{if(o.isSkinnedMesh){o.material=mat;o.frustumCulled=false;meshes.push(o);if(!surface||o.geometry.attributes.position.count>surface.geometry.attributes.position.count)surface=o}});
+    pivot.add(root);
+    bindPos=surface.geometry.attributes.position;
+    const P=new THREE.Vector3(),nearest=t=>{let b=0,bd=1e9;for(let i=0;i<bindPos.count;i++){P.fromBufferAttribute(bindPos,i);const d=P.distanceToSquared(t);if(d<bd){bd=d;b=i}}return b};
+    LOTS.forEach(l=>{const i=nearest(new THREE.Vector3(...l.p));anchors.push(i);seeds.push(new THREE.Vector3().fromBufferAttribute(bindPos,i))});
+    // filler patches
+    let s=7;const rnd=()=>(s=(s*16807)%2147483647)/2147483647;
+    const tiles=LOTS.map(l=>l.tile);
+    let guard=0;
+    while(seeds.length<NS&&guard<40000){guard++;const i=rnd()*bindPos.count|0;P.fromBufferAttribute(bindPos,i);
+      if(seeds.every(q=>q.distanceTo(P)>0.095)){seeds.push(P.clone());const r=rnd();tiles.push(r<.06?13:r<.11?14:[0,1,2,3,4,5,6,8,9,10,11,12,15][rnd()*13|0])}}
+    while(seeds.length<NS){seeds.push(new THREE.Vector3(0,-9,0));tiles.push(0)}
+    uni.uSeeds.value=seeds;uni.uTiles.value=tiles;
+    mixer=new THREE.AnimationMixer(root);
+    const idle=gltf.animations.find(a=>a.name==="idle")||gltf.animations[0];
+    if(idle)mixer.clipAction(idle).play();
+    mixer.update(0.01);pivot.updateMatrixWorld(true);
+    const toe=new THREE.Vector3(),hip=new THREE.Vector3();
+    root.traverse(o=>{if(o.isBone&&/LeftToeBase$/.test(o.name))o.getWorldPosition(toe);if(o.isBone&&/Hips$/.test(o.name))o.getWorldPosition(hip)});
+    pivot.worldToLocal(toe);pivot.worldToLocal(hip);toe.sub(hip);
+    rotY=-Math.atan2(toe.x,toe.z)+0.35;pivot.rotation.y=rotY;pivot.updateMatrixWorld(true);
+    $("loading").hidden=true;$("callout").hidden=false;
+    window.B.focus(sel,false);
+  },undefined,err=>{$("loading").textContent="3D failed to load"});
+
+  // interaction
+  let rotY=0,rotTarget=null,vel=0,drag=null;
+  const ray=new THREE.Raycaster(),ndc=new THREE.Vector2();
+  function pick(ev){
+    if(!meshes.length)return -1;const r=cv.getBoundingClientRect();
+    ndc.set((ev.clientX-r.left)/r.width*2-1,-(ev.clientY-r.top)/r.height*2+1);ray.setFromCamera(ndc,cam);
+    const hit=ray.intersectObjects(meshes,false)[0];if(!hit||!hit.face)return -1;
+    const pa=hit.object.geometry.attributes.position;const v=new THREE.Vector3().fromBufferAttribute(pa,hit.face.a);
+    let b=0,bd=1e9;seeds.forEach((s,i)=>{const d=s.distanceTo(v);if(d<bd){bd=d;b=i}});return b;
+  }
+  cv.addEventListener("pointerdown",e=>{drag={x:e.clientX,y:e.clientY,t:performance.now(),moved:0};cv.setPointerCapture(e.pointerId);rotTarget=null});
+  cv.addEventListener("pointermove",e=>{
+    if(drag){const dx=e.clientX-drag.x,dy=e.clientY-drag.y;drag.moved+=Math.abs(dx)+Math.abs(dy);rotY+=dx*0.011;vel=dx*0.011;camH=Math.max(0.55,Math.min(1.55,camH+dy*0.004));drag.x=e.clientX;drag.y=e.clientY}
+    else if(e.pointerType==="mouse"){const p=pick(e);uni.uHover.value=p>=0&&p<LOTS.length?p:-1;cv.style.cursor=uni.uHover.value>=0?"pointer":"grab"}
+  });
+  cv.addEventListener("pointerup",e=>{if(drag&&drag.moved<6){const p=pick(e);if(p>=0&&p<LOTS.length)select(p,true)}drag=null});
+  cv.addEventListener("wheel",e=>{e.preventDefault();camDist=Math.max(2.6,Math.min(6,camDist+e.deltaY*0.002))},{passive:false});
+  $("rl").addEventListener("click",()=>{rotTarget=(rotTarget??rotY)-Math.PI/4});
+  $("rr").addEventListener("click",()=>{rotTarget=(rotTarget??rotY)+Math.PI/4});
+
+  const wp=new THREE.Vector3();
+  const posed=(i,v)=>{v.fromBufferAttribute(bindPos,i);surface.boneTransform(i,v);return v.applyMatrix4(surface.matrixWorld)};
+  window.B={recolor(i){if(seeds.length)uni.uRC.value.set(css(rarOf(topBid(LOTS[i])).c))},focus(i,turn){
+    if(!seeds.length)return;
+    uni.uSel.value=i;uni.uRC.value.set(css(rarOf(topBid(LOTS[i])).c));
+    if(turn){const s=pivot.worldToLocal(posed(anchors[i],new THREE.Vector3()));let a=-Math.atan2(s.x,s.z)+0.25;while(a-rotY>Math.PI)a-=2*Math.PI;while(a-rotY<-Math.PI)a+=2*Math.PI;rotTarget=a}
+  }};
+
+  function size(){const w=view.clientWidth,h=view.clientHeight;renderer.setSize(w,h,false);cam.aspect=w/h;cam.updateProjectionMatrix();
+    camDist=w/h<0.75?5.7:4.6}
+  new ResizeObserver(size).observe(view);size();
+
+  const clock=new THREE.Clock(),co=$("callout");
+  (function loop(){
+    requestAnimationFrame(loop);
+    const dt=Math.min(.05,clock.getDelta());uni.uTime.value+=dt;
+    if(mixer)mixer.update(dt);
+    if(!drag){if(rotTarget!==null){rotY+=(rotTarget-rotY)*Math.min(1,dt*5);if(Math.abs(rotTarget-rotY)<.002)rotTarget=null;vel=0}else{rotY+=vel;vel*=.92}}
+    pivot.rotation.y=rotY;
+    cam.position.set(0,camH,camDist);cam.lookAt(0,tgtH,0);
+    renderer.render(scene,cam);
+    if(surface&&anchors.length){
+      posed(anchors[sel],wp);
+      const facing=wp.z/Math.max(1e-3,Math.hypot(wp.x,wp.z));
+      wp.project(cam);const x=(wp.x*.5+.5)*view.clientWidth,y=(-wp.y*.5+.5)*view.clientHeight;
+      co.style.transform=`translate(${x}px,${y}px)`;co.style.opacity=facing>-0.2?1:0.25;
+    }
+  })();
+})();
+poll();
+}
+function poll(){if(document.hidden||!window.applyBoard)return;fetch("/api/board",{cache:"no-store"}).then(r=>r.ok?r.json():null).then(d=>{if(d&&d.lots)window.applyBoard(d)}).catch(()=>{})}
+(function loopPoll(){setTimeout(()=>{poll();loopPoll()},phase()==="open"?4000:30000)})();
+document.addEventListener("visibilitychange",poll);
+fetch("assets/lots.json",{cache:"no-cache"}).then(r=>r.json()).then(d=>{LOTS=d;LOTS.forEach(l=>{l.board=[];l.count=0;l.nb=0});boot()}).catch(()=>{document.getElementById("loading").textContent="Could not load the lots. Reload the page."});
+</script>
+
+</body></html>

@@ -5,8 +5,7 @@
 <style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
 <title>Skin Auction</title>
 <meta name="claude:viewport-fit-sides" content="cover">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="/assets/fonts/fonts.css">
 <style>
 /* Layout: an auction catalogue page. Text column left, the lot (a photo of skin) right; below, catalogue sections with lot-style data in mono. */
 :root{
@@ -91,8 +90,8 @@ footer{border-top:1px solid var(--rule);padding-top:16px;display:flex;justify-co
       <p class="lede">People in Berlin put a spot of their own skin up for auction. Whoever bids highest decides what will be tattooed there, for good.</p>
       <p class="q">Who does a body belong to once someone has paid for it?</p>
       <div class="cta">
-        <a class="btn" href="#register">Register to bid</a>
-        <span class="note">Registered bidders see the lots 24 h before everyone else</span>
+        <a class="btn" href="/">Get a paddle number</a>
+        <span class="note">Only your paddle number is shown, never your name</span>
       </div>
     </div>
     <figure class="lot">
@@ -107,7 +106,7 @@ footer{border-top:1px solid var(--rule);padding-top:16px;display:flex;justify-co
       <h2 id="how">How it works</h2>
       <ol class="steps">
         <li><div><b>The lots</b><p>5–7 people aged 21+ are selected through an open call. Each one sets the spot on the body, its size, a starting price and what must never be tattooed there.</p></div></li>
-        <li><div><b>Seven days of bidding</b><p>Bidding runs online from Monday 30 November to Sunday 6 December 2026. Anyone can bid, from any country. The last hour, 19:00–20:00 Berlin time on 6 December, runs live.</p></div></li>
+        <li><div><b>Seven days of bidding</b><p>Bidding runs online from Monday 30 November to Sunday 6 December 2026. Anyone can bid, from any country. Bids appear live under paddle numbers. A bid in the last 2 minutes of a lot adds 2 minutes.</p></div></li>
         <li><div><b>The winner chooses the image</b><p>The highest bidder sends a design within 3 days. The participant has 24 hours to accept or refuse it. Nothing is paid before a yes.</p></div></li>
         <li><div><b>The tattoo</b><p>Slava tattoos the design in her Berlin studio. The participant keeps the full winning bid. The winner adds €30 for materials and receives the documentation.</p></div></li>
       </ol>
@@ -156,16 +155,11 @@ footer{border-top:1px solid var(--rule);padding-top:16px;display:flex;justify-co
   <section id="register">
     <div class="reg">
       <h3>Register to bid</h3>
-      <p>Send one short message with your name and country. Bidding runs 30 November – 6 December 2026, and registered bidders see the lots 24 hours before they go public.</p>
+      <p>Get your paddle number on the <a href="/">auction page</a>. Bidding runs 30 November – 6 December 2026. Bidding for several lots, or prefer to bid privately? Write directly:</p>
       <div class="ways">
         <div class="way"><span class="k">Instagram</span><span class="v">@iconicyzma</span><button class="copy" type="button" data-copy="@iconicyzma">Copy</button><a class="note" href="https://instagram.com/iconicyzma" target="_blank" rel="noopener">Open Instagram</a></div>
         <div class="way"><span class="k">Email</span><span class="v">slavasolen@gmail.com</span><button class="copy" type="button" data-copy="slavasolen@gmail.com">Copy</button></div>
       </div>
-      <p class="msg" id="msg">BID
-Name:
-Country:
-Instagram (optional):</p>
-      <button class="copy" type="button" data-copy-el="msg">Copy the message</button>
     </div>
   </section>
 
@@ -176,7 +170,8 @@ Instagram (optional):</p>
         <li>Participants are 21 or older and set their own limits. A design outside those limits is refused.</li>
         <li>The participant can refuse any design without giving a reason. The winner can then send a new one within 3 days.</li>
         <li>If the winner does not pay within 48 hours after a yes, the lot goes to the next highest bid.</li>
-        <li>Only registered bidders can bid. Each bid is confirmed by direct message.</li>
+        <li>Bids are placed on the live board under paddle numbers. A secret maximum bids for you, one step at a time, up to the amount you set.</li>
+        <li>No buyer’s premium. The participant receives the full price; the winner adds €30 for materials. Payment by bank transfer (SEPA) or PayPal (PayPal fees added).</li>
         <li>All tattoos are done in Berlin, in a professional tattoo studio, with single-use sterile equipment.</li>
       </ul>
     </div>
@@ -192,7 +187,7 @@ Instagram (optional):</p>
     </div>
   </section>
 
-  <footer><span>Skin Auction · Berlin 2026</span><span>slavasolen@gmail.com</span></footer>
+  <footer><span>Skin Auction · Berlin 2026</span><span><a href="/impressum.html">Impressum</a> · <a href="/datenschutz.html">Datenschutz</a> · slavasolen@gmail.com</span></footer>
 </div>
 
 <script>
