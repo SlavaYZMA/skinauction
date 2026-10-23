@@ -28,6 +28,18 @@ async function lotBids(store, lot) {
     .sort((a, b) => b.v - a.v || a.t - b.t);
 }
 
+// Soft close: a bid in the last 2 minutes of a lot extends that lot by 2 minutes from the bid.
+// Derived from the bid times themselves, so no extra state can drift.
+export const EXT = 120_000;
+export function lotClose(bids) {
+  let close = CLOSE;
+  for (const b of [...bids].sort((x, y) => x.t - y.t)) {
+    if (b.t > close) break;
+    if (b.t > close - EXT) close = b.t + EXT;
+  }
+  return close;
+}
+
 export async function register(store, b) {
   const name = clean(b.name, 40), country = clean(b.country, 40), contact = clean(b.contact, 80);
   if (!name || !contact) return { error: "Add a name and your Instagram or email." };
@@ -56,7 +68,7 @@ export async function board(store, now = Date.now()) {
   const lots = {};
   for (const l of LOTS) {
     const bids = await lotBids(store, l.no);
-    lots[l.no] = { count: bids.length, bidders: new Set(bids.map((x) => x.num)).size, bids: bids.slice(0, 12) };
+    lots[l.no] = { count: bids.length, bidders: new Set(bids.map((x) => x.num)).size, close: lotClose(bids), bids: bids.slice(0, 12) };
   }
   const regs = (await store.list({ prefix: "reg/" })).blobs
     .map(({ key }) => { const [t, num] = key.slice(4).split("-").map(Number); return { num, t }; })
@@ -66,7 +78,6 @@ export async function board(store, now = Date.now()) {
 
 export async function bid(store, b, now = Date.now()) {
   if (now < OPEN) return { error: "Bidding opens on 30 November. Register now to get your paddle number.", status: 409 };
-  if (now > CLOSE) return { error: "Bidding has closed.", status: 409 };
   const lot = LOTS.find((l) => l.no === String(b.lot));
   if (!lot) return { error: "Unknown lot.", status: 400 };
   if (!lot.start) return { error: "The start price for this lot is not set yet.", status: 409 };
@@ -75,12 +86,13 @@ export async function bid(store, b, now = Date.now()) {
   const reg = await register(store, b);
   if (reg.error) return { ...reg, status: 400 };
   const before = await lotBids(store, lot.no);
+  if (now > lotClose(before)) return { error: "Bidding on this lot has closed.", status: 409 };
   const top = before[0]?.v;
   const min = top ? top + step(top) : lot.start;
   if (amount < min) return { error: `Bid at least €${min}.`, min, status: 409 };
   await store.setJSON(bidKey(lot.no, amount, now, reg.num), { name: clean(b.name, 40), contact: clean(b.contact, 80) }, { onlyIfNew: true });
   const bids = await lotBids(store, lot.no);
-  return { ok: true, num: reg.num, lot: lot.no, count: bids.length, bids: bids.slice(0, 12) };
+  return { ok: true, num: reg.num, lot: lot.no, count: bids.length, close: lotClose(bids), bids: bids.slice(0, 12) };
 }
 
 export default async (req) => {
