@@ -28,6 +28,61 @@ async function lotBids(store, lot) {
     .sort((a, b) => b.v - a.v || a.t - b.t);
 }
 
+// Ceiling bids (secret maximum, like an absentee bid at an auction house).
+// Key: max/<lot>/<paddle> → { v, t, name, contact }. Only the resulting bids are ever public.
+const maxKey = (lot, num) => `max/${lot}/${num}`;
+async function lotMaxes(store, lot) {
+  const { blobs } = await store.list({ prefix: `max/${lot}/` });
+  const out = [];
+  for (const { key } of blobs) {
+    const m = await store.get(key, { type: "json" });
+    if (m) out.push({ num: Number(key.split("/")[2]), v: m.v, t: m.t });
+  }
+  return out;
+}
+
+// After any bid or new ceiling: let ceilings answer, eBay style.
+// A = bidder with the highest ceiling (earliest wins a tie), B = the next one.
+// B's ceiling bids as high as A can still beat by one step; then A takes the lead
+// at one step above B's ceiling, capped at A's own ceiling.
+export async function resolve(store, lot, now = Date.now()) {
+  const maxes = await lotMaxes(store, lot.no);
+  if (!maxes.length) return;
+  let bids = await lotBids(store, lot.no);
+  const ceil = new Map();
+  for (const b of bids) {
+    const e = ceil.get(b.num) || { num: b.num, c: 0, t: b.t, best: 0, proxy: false };
+    e.best = Math.max(e.best, b.v); e.c = Math.max(e.c, b.v); e.t = Math.min(e.t, b.t);
+    ceil.set(b.num, e);
+  }
+  for (const m of maxes) {
+    const e = ceil.get(m.num) || { num: m.num, c: 0, t: m.t, best: 0, proxy: false };
+    if (m.v >= e.c) { e.c = m.v; e.proxy = true; e.t = Math.min(e.t, m.t); }
+    ceil.set(m.num, e);
+  }
+  const ranked = [...ceil.values()].filter((e) => e.c >= (lot.start || 0)).sort((a, b) => b.c - a.c || a.t - b.t);
+  const A = ranked[0], B = ranked[1];
+  if (!A) return;
+  const minNext = (top) => (top ? top.v + step(top.v) : lot.start);
+  let t = now;
+  const put = async (num, v) => {
+    await store.setJSON(bidKey(lot.no, v, t, num), { auto: true }, { onlyIfNew: true });
+    t += 1;
+    bids = await lotBids(store, lot.no);
+  };
+  // B's ceiling answers first (only a secret ceiling bids by itself).
+  if (B && B.proxy) {
+    let x = B.c;
+    while (x > 0 && x + step(x) > A.c) x--;
+    if (x > B.best && x >= minNext(bids[0])) await put(B.num, x);
+  }
+  // A takes or keeps the lead.
+  if (A.proxy && bids[0]?.num !== A.num) {
+    const target = Math.max(minNext(bids[0]), B ? Math.min(A.c, B.c + step(B.c)) : 0);
+    if (target <= A.c) await put(A.num, target);
+  }
+}
+
 // Soft close: a bid in the last 2 minutes of a lot extends that lot by 2 minutes from the bid.
 // Derived from the bid times themselves, so no extra state can drift.
 export const EXT = 120_000;
@@ -57,7 +112,9 @@ export async function register(store, b) {
       const e = await store.get("bidder/" + h, { type: "json" });
       return { num: e.num, isNew: false };
     }
-    await store.setJSON(`reg/${Date.now()}-${num}`, {}, { onlyIfNew: true });
+    // Country goes into the key only as an ISO code, so the board can count countries without reading bidder records.
+    const cc = /^[A-Za-z]{2}$/.test(country) ? country.toUpperCase() : "";
+    await store.setJSON(`reg/${Date.now()}-${num}${cc ? "-" + cc : ""}`, {}, { onlyIfNew: true });
     return { num, isNew: true };
   }
   return { error: "Could not assign a paddle number. Try again." };
@@ -70,10 +127,11 @@ export async function board(store, now = Date.now()) {
     const bids = await lotBids(store, l.no);
     lots[l.no] = { count: bids.length, bidders: new Set(bids.map((x) => x.num)).size, close: lotClose(bids), bids: bids.slice(0, 12) };
   }
-  const regs = (await store.list({ prefix: "reg/" })).blobs
-    .map(({ key }) => { const [t, num] = key.slice(4).split("-").map(Number); return { num, t }; })
-    .sort((a, b) => b.t - a.t).slice(0, 20);
-  return { now, open: OPEN, close: CLOSE, bidders: blobs.length, regs, lots };
+  const all = (await store.list({ prefix: "reg/" })).blobs
+    .map(({ key }) => { const [t, num, cc] = key.slice(4).split("-"); return { num: Number(num), t: Number(t), cc: cc || "" }; });
+  const countries = new Set(all.map((r) => r.cc).filter(Boolean)).size;
+  const regs = all.sort((a, b) => b.t - a.t).slice(0, 20).map(({ num, t }) => ({ num, t }));
+  return { now, open: OPEN, close: CLOSE, bidders: blobs.length, countries, regs, lots };
 }
 
 export async function bid(store, b, now = Date.now()) {
@@ -90,9 +148,15 @@ export async function bid(store, b, now = Date.now()) {
   const top = before[0]?.v;
   const min = top ? top + step(top) : lot.start;
   if (amount < min) return { error: `Bid at least €${min}.`, min, status: 409 };
-  await store.setJSON(bidKey(lot.no, amount, now, reg.num), { name: clean(b.name, 40), contact: clean(b.contact, 80) }, { onlyIfNew: true });
+  if (yes(b.ceiling)) {
+    // Secret ceiling: nothing public is written here; resolve() places the bids it needs.
+    await store.setJSON(maxKey(lot.no, reg.num), { v: amount, t: now, name: clean(b.name, 40), contact: clean(b.contact, 80) });
+  } else {
+    await store.setJSON(bidKey(lot.no, amount, now, reg.num), { name: clean(b.name, 40), contact: clean(b.contact, 80) }, { onlyIfNew: true });
+  }
+  await resolve(store, lot, now + 1);
   const bids = await lotBids(store, lot.no);
-  return { ok: true, num: reg.num, lot: lot.no, count: bids.length, close: lotClose(bids), bids: bids.slice(0, 12) };
+  return { ok: true, num: reg.num, lot: lot.no, lead: bids[0]?.num === reg.num, ceiling: yes(b.ceiling) ? amount : null, count: bids.length, close: lotClose(bids), bids: bids.slice(0, 12) };
 }
 
 export default async (req) => {
