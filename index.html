@@ -207,7 +207,7 @@ const RAR=[
 const LOTS=[
   {no:"01",part:"Right Thigh",        p:[-0.11,0.62, 0.08],tile:10,size:"10–15 cm",       float:0.21, start:100, seller:"@linaschriever · Berlin",          off:"portraits, faces"},
   {no:"02",part:"Back",               p:[ 0.00,1.30,-0.13],tile:11,size:"up to 25 cm",    float:0.04, start:100, seller:"Participant 02 · Berlin",         off:"political content, names, faces"},
-  {no:"03",part:"Outer Thigh · Cover-up",p:[-0.17,0.72,0.00],tile:5,size:"large, over an old tattoo",float:0.62,start:null,seller:"Participant 03 · Berlin",off:"to be announced"},
+  {no:"03",part:"Outer Thigh · Cover-up",p:[-0.17,0.72,0.00],tile:7,size:"over the old tattoo + above and below",float:0.62,start:null,seller:"Participant 03 · Berlin",off:"to be announced"},
   {no:"04",part:"Butt, Knee or Ankle",p:[-0.11,0.48, 0.07],tile:2, size:"up to 10 × 10 cm",float:0.009,start:111, seller:"@louis.difadv · Friedrichshain",   off:"faces of real people, hate symbols"},
   {no:"05",part:"Left Calf",          p:[ 0.11,0.33,-0.06],tile:8, size:"to be announced",float:0.10, start:null,seller:"YZMA · the artist",              off:"hate symbols"}
 ];
@@ -361,7 +361,7 @@ diffuseColor.rgb=col;`);
     const tiles=LOTS.map(l=>l.tile);
     let guard=0;
     while(seeds.length<NS&&guard<40000){guard++;const i=rnd()*bindPos.count|0;P.fromBufferAttribute(bindPos,i);
-      if(seeds.every(q=>q.distanceTo(P)>0.095)){seeds.push(P.clone());const r=rnd();tiles.push(r<.06?13:r<.11?14:[0,1,2,3,4,5,6,7,8,9,10,11,12,15][rnd()*14|0])}}
+      if(seeds.every(q=>q.distanceTo(P)>0.095)){seeds.push(P.clone());const r=rnd();tiles.push(r<.06?13:r<.11?14:[0,1,2,3,4,5,6,8,9,10,11,12,15][rnd()*13|0])}}
     while(seeds.length<NS){seeds.push(new THREE.Vector3(0,-9,0));tiles.push(0)}
     uni.uSeeds.value=seeds;uni.uTiles.value=tiles;
     mixer=new THREE.AnimationMixer(root);
