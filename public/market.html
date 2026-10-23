@@ -1,0 +1,297 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Skin Auction</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="description" content="Fresh human skin from Berlin. Bid on a spot of someone's skin and decide what gets tattooed there, forever. Bidding 30 Nov – 6 Dec 2026.">
+<meta property="og:title" content="Skin Auction"><meta property="og:description" content="Fresh human skin from Berlin. Bidding 30 Nov – 6 Dec 2026, worldwide."><meta property="og:image" content="https://skinauction.org/assets/lots/01.jpg">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Arimo:wght@400;600;700&family=IBM+Plex+Mono:wght@500;700&display=swap">
+<style>
+/* Layout: a deadpan online marketplace. Listing grid of skin cuts on foam trays under cling film, supermarket price stickers; listing page with bid box, specifics, bid history. Single light look on purpose. */
+:root{
+  color-scheme:light;
+  --bg:#ffffff; --bg2:#f4f5f6; --line:#dfe2e5; --ink:#191c1f; --muted:#5f6670; --link:#1f5fd1; --go:#1f5fd1; --go2:#174cad;
+  --red:#cf1f26; --tray:#f7f7f4; --label:#fffdf6; --ok:#147a3d;
+  --f-ui:"Arimo",Arial,"Helvetica Neue",system-ui,sans-serif;
+  --f-tag:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+  padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
+}
+*,*::before,*::after{box-sizing:border-box}
+[hidden]{display:none!important}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--f-ui);font-size:15px;line-height:1.45}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bg)}
+img{max-width:100%}
+a{color:var(--link)}
+button,input{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--go);outline-offset:2px}
+.w{max-width:1200px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+
+/* header */
+.hd{border-bottom:1px solid var(--line);position:sticky;top:env(safe-area-inset-top,0px);background:var(--bg);z-index:5}
+.hd .w{display:flex;align-items:center;gap:16px;padding-block:10px;flex-wrap:wrap}
+.logo{font-weight:700;font-size:22px;letter-spacing:-.02em;text-decoration:none;color:var(--ink);display:flex;align-items:baseline;gap:2px}
+.logo span{color:var(--red)}
+.search{flex:1 1 280px;display:flex;min-width:0}
+.search input{flex:1;min-width:0;border:2px solid var(--ink);border-right:0;border-radius:22px 0 0 22px;padding:9px 14px;font-size:15px;background:var(--bg)}
+.search button{border:0;background:var(--go);color:#fff;font-weight:700;padding:0 18px;border-radius:0 22px 22px 0;cursor:pointer}
+.me{display:flex;gap:14px;align-items:center;font-size:13px;color:var(--muted);white-space:nowrap}
+.me b{color:var(--ink)}
+.timer{font-variant-numeric:tabular-nums}
+.live{color:var(--red);font-weight:700}
+.cats{display:flex;gap:6px;padding-block:8px 10px;overflow-x:auto}
+.cats button{border:1px solid var(--line);background:var(--bg);border-radius:16px;padding:5px 12px;font-size:13px;cursor:pointer;white-space:nowrap}
+.cats button[aria-pressed="true"]{background:var(--ink);color:#fff;border-color:var(--ink)}
+
+/* intro */
+.intro{display:flex;justify-content:space-between;gap:16px;align-items:flex-end;flex-wrap:wrap;padding-block:22px 14px}
+.intro h1{margin:0;font-size:clamp(22px,3.4vw,30px);letter-spacing:-.01em;text-wrap:balance}
+.intro p{margin:4px 0 0;color:var(--muted);max-width:62ch}
+.sort{font-size:13px;color:var(--muted)}
+
+/* tray + label */
+.tray{position:relative;background:var(--tray);border-radius:16px;padding:7%;box-shadow:inset 0 0 0 1px #e6e6e0,inset 0 -10px 18px rgba(0,0,0,.05),0 1px 2px rgba(0,0,0,.06);aspect-ratio:1/1;max-width:100%}
+.tray .meat{position:absolute;inset:7%;border-radius:10px;overflow:hidden;background:#e9d3c7}
+.tray .meat img{width:100%;height:100%;object-fit:cover;display:block;filter:saturate(1.08) contrast(1.04)}
+.tray .meat.none{display:grid;place-items:center;background:repeating-linear-gradient(135deg,#efe3dc 0 10px,#eadbd2 10px 20px);color:#8a6f62;font-size:13px;text-align:center;padding:12px}
+.tray::after{content:"";position:absolute;inset:3%;border-radius:14px;pointer-events:none;
+  background:linear-gradient(118deg,rgba(255,255,255,0) 28%,rgba(255,255,255,.38) 40%,rgba(255,255,255,0) 52%),linear-gradient(200deg,rgba(255,255,255,0) 60%,rgba(255,255,255,.22) 70%,rgba(255,255,255,0) 78%),linear-gradient(rgba(220,235,255,.10),rgba(220,235,255,.10));
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.6)}
+.lbl{position:absolute;right:4%;bottom:5%;width:min(58%,190px);background:var(--label);font-family:var(--f-tag);font-size:9.5px;line-height:1.25;color:#222;box-shadow:0 1px 3px rgba(0,0,0,.25);transform:rotate(-2.5deg);z-index:2}
+.lbl .lh{background:var(--red);color:#fff;font-weight:700;letter-spacing:.06em;padding:3px 6px;display:flex;justify-content:space-between}
+.lbl .lb{padding:4px 6px 5px;display:grid;gap:1px}
+.lbl .lt{font-weight:700;font-size:10.5px}
+.lbl .lr{display:flex;justify-content:space-between;gap:6px}
+.lbl .lp{display:flex;justify-content:space-between;align-items:baseline;border-top:1px dashed #999;margin-top:3px;padding-top:3px}
+.lbl .lp b{font-size:15px}
+.lbl svg{display:block;width:100%;height:18px;margin-top:3px}
+.lbl .mhd{font-size:8.5px;color:#555}
+.big .lbl{font-size:12px;width:min(46%,240px)}
+.big .lbl .lt{font-size:13px}.big .lbl .lp b{font-size:20px}.big .lbl svg{height:24px}
+
+/* grid */
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:24px 20px;padding-block:6px 40px}
+.card{display:grid;gap:8px;text-decoration:none;color:inherit;min-width:0;cursor:pointer;background:none;border:0;padding:0;text-align:left}
+.card:hover .ti{text-decoration:underline}
+.ti{font-size:15px;line-height:1.3;margin:2px 0 0;color:var(--ink)}
+.cond{font-size:13px;color:var(--muted)}
+.pr{font-size:21px;font-weight:700;font-variant-numeric:tabular-nums}
+.sub{font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums}
+.sub b{color:var(--ink);font-weight:600}
+.badge{display:inline-block;font-size:11px;font-weight:700;color:var(--red);border:1px solid var(--red);border-radius:3px;padding:0 4px;margin-right:6px;vertical-align:1px}
+
+/* listing */
+.crumbs{font-size:13px;color:var(--muted);padding-block:14px 8px}
+.crumbs button{background:none;border:0;padding:0;color:var(--link);cursor:pointer;text-decoration:underline}
+.item{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);gap:36px;padding-block:6px 30px;align-items:start}
+.item h1{font-size:clamp(20px,2.6vw,26px);margin:0 0 6px;line-height:1.25;text-wrap:balance}
+.seller{font-size:14px;color:var(--muted);padding-bottom:12px;border-bottom:1px solid var(--line)}
+.seller b{color:var(--ink)}
+.box{border:1px solid var(--line);border-radius:12px;padding:16px;margin-top:14px;display:grid;gap:10px}
+.cb{display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap}
+.cb .pr{font-size:28px}
+.cb .sub{text-align:right}
+.ends{font-size:14px}
+form{display:grid;gap:9px}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+label.f{display:grid;gap:3px;font-size:12px;color:var(--muted)}
+label.f input{border:1px solid #b9bfc6;border-radius:8px;padding:9px 10px;font-size:15px;background:#fff;min-width:0;width:100%}
+.amt{display:flex;gap:6px}
+.amt input{flex:1}
+.amt button{border:1px solid var(--line);background:var(--bg2);border-radius:8px;padding:0 10px;cursor:pointer;font-size:13px}
+.ck{display:flex;gap:8px;font-size:13px;align-items:flex-start}
+.ck input{margin-top:2px;accent-color:var(--go)}
+.go{background:var(--go);color:#fff;border:0;border-radius:24px;padding:12px;font-weight:700;font-size:16px;cursor:pointer}
+.go:hover{background:var(--go2)}
+.go:disabled{background:#9aa8c2;cursor:default}
+.msg{font-size:14px;padding:9px 11px;border-radius:8px;background:#e8f5ec;color:var(--ok)}
+.msg.err{background:#fdecec;color:var(--red)}
+.pad{font-size:13px;color:var(--muted)}
+.pad b{color:var(--ink);font-size:15px}
+.trust{font-size:13px;color:var(--muted);display:grid;gap:4px;margin-top:4px}
+h2{font-size:18px;margin:26px 0 10px}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+th{color:var(--muted);font-weight:400;width:38%}
+.hist td{font-variant-numeric:tabular-nums}
+.hist tr.mine td{background:#eef4ff}
+.hist .you{font-size:11px;font-weight:700;color:var(--go);margin-left:6px}
+.more .lbl{display:none}
+.more{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:16px}
+.ft{border-top:1px solid var(--line);margin-top:20px;padding-block:18px 30px;font-size:13px;color:var(--muted)}
+.ft .w{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
+
+@media (max-width:820px){
+  .item{grid-template-columns:minmax(0,1fr);gap:16px}
+  .me .opt{display:none}
+  .grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:18px 12px}
+  .pr{font-size:18px}
+  .lbl{font-size:8px;width:56%}.lbl .lt{font-size:9px}.lbl .lp b{font-size:12px}.lbl svg{height:13px}
+}
+</style>
+</head><body>
+
+<header class="hd">
+  <div class="w">
+    <a class="logo" href="#" id="home">skin<span>auction</span></a>
+    <form class="search" id="sf" role="search"><input id="q" type="search" placeholder="Search for skin" aria-label="Search for skin"><button type="submit">Search</button></form>
+    <div class="me"><span class="timer" id="clock">Bidding opens in …</span><span class="opt"><b id="nb">0</b> bidders</span><span id="mypad" hidden>Paddle <b id="mynum"></b></span></div>
+  </div>
+  <div class="w cats" id="cats"></div>
+</header>
+
+<main>
+  <section class="w" id="list">
+    <div class="intro">
+      <div><h1>Fresh human skin from Berlin</h1><p>Each lot is a real spot on a living person. The highest bidder decides what gets tattooed there. Permanent, no returns.</p></div>
+      <div class="sort" id="count"></div>
+    </div>
+    <div class="grid" id="grid"></div>
+  </section>
+
+  <section class="w" id="page" hidden>
+    <nav class="crumbs" id="crumbs"></nav>
+    <div class="item">
+      <div><div class="tray big" id="ptray"></div></div>
+      <div>
+        <h1 id="ptitle"></h1>
+        <div class="seller" id="pseller"></div>
+        <div class="box">
+          <div class="cb"><div><div class="sub" id="plab">Starting bid</div><div class="pr" id="pprice"></div></div><div class="sub" id="pstat"></div></div>
+          <div class="ends" id="pends"></div>
+          <div class="pad" id="ppad" hidden>Your paddle: <b id="ppadn"></b></div>
+          <form id="f" novalidate>
+            <div id="amtrow"><label class="f" for="amt">Your bid, €<div class="amt"><input type="number" id="amt" inputmode="numeric" min="1" step="1"><button type="button" data-add="10">+10</button><button type="button" data-add="50">+50</button></div></label></div>
+            <div class="row2"><label class="f" for="nick">Name or nickname<input id="nick" autocomplete="nickname" maxlength="40"></label><label class="f" for="country">Country<input id="country" autocomplete="country-name" maxlength="40"></label></div>
+            <label class="f" for="contact">Instagram or email<input id="contact" maxlength="80" placeholder="@handle or you@mail.com"></label>
+            <label class="ck" for="c21"><input type="checkbox" id="c21"> I am 21 or older</label>
+            <label class="ck" for="crules"><input type="checkbox" id="crules"> I pay within 48 h if I win. The tattoo is done by a professional studio.</label>
+            <input type="text" id="hp" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-9999px">
+            <button class="go" id="go" type="submit">Place bid</button>
+            <div class="msg" id="msg" hidden></div>
+          </form>
+          <div class="trust"><span>Public: only your paddle number, your amount and the time.</span><span>Private: your name and contact. Used only to reach the winner.</span></div>
+        </div>
+      </div>
+    </div>
+    <h2>Item specifics</h2>
+    <table id="spec"></table>
+    <h2>Bid history</h2>
+    <table class="hist" id="hist"></table>
+    <h2>Delivery and returns</h2>
+    <table>
+      <tr><th>Delivery</th><td>Pickup only. The winner's design is tattooed on the seller in Berlin by a professional studio. Materials (€30) are paid by the winner.</td></tr>
+      <tr><th>Payment</th><td>Within 48 hours of the end of the auction. If the winner does not pay, the lot goes to the next highest bid.</td></tr>
+      <tr><th>Returns</th><td>None. Permanent.</td></tr>
+      <tr><th>Seller's right</th><td>The seller can refuse a design.</td></tr>
+    </table>
+    <h2>More skin</h2>
+    <div class="more" id="more"></div>
+  </section>
+</main>
+
+<footer class="ft"><div class="w"><span>Skin Auction · a live art project by YZMA, Berlin · bidding 30 Nov – 6 Dec 2026, last hour 6 Dec 19:00–20:00 CET</span><span><a href="about.html">About</a> · <a href="about.html#rules">Rules</a></span></div></footer>
+
+<!-- static copy for Netlify Forms detection; the page posts to it after each registration or bid -->
+<form name="bid" data-netlify="true" netlify-honeypot="bot-field" hidden>
+  <input name="lot"><input name="bid_eur"><input name="name"><input name="country"><input name="contact"><input name="age_21"><input name="rules"><input name="paddle"><input name="kind"><input name="bot-field">
+</form>
+
+<script>
+const $=id=>document.getElementById(id);
+const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+let LOTS=[],ST={open:Date.parse("2026-11-30T00:00:00+01:00"),close:Date.parse("2026-12-06T20:00:00+01:00"),skew:0,bidders:0,live:false},cur=null,cat="All",q="";
+const now=()=>Date.now()+ST.skew;
+const phase=()=>now()<ST.open?"pre":now()>ST.close?"closed":"open";
+const step=v=>Math.max(10,Math.ceil(v*0.05/5)*5);
+const topBid=l=>l.bids.length?l.bids[0].v:(l.start||0);
+const minBid=l=>l.bids.length?topBid(l)+step(topBid(l)):(l.start||0);
+const eur=v=>v?"€"+v.toLocaleString("en"):"TBA";
+const deEur=v=>v?"€ "+v.toFixed(2).replace(".",","):"€ —";
+let MY=null;try{MY=+localStorage.getItem("paddle")||null}catch(e){}
+const ago=t=>{const s=Math.max(0,(now()-t)/1000|0);return s<60?s+" s ago":s<3600?(s/60|0)+" min ago":s<86400?(s/3600|0)+" h ago":(s/86400|0)+" d ago"};
+function left(to){let s=Math.max(0,(to-now())/1000|0);const d=s/86400|0,h=(s%86400)/3600|0,m=(s%3600)/60|0,sec=s%60;return d?`${d}d ${h}h ${m}m`:`${h}h ${m}m ${String(sec).padStart(2,"0")}s`}
+function barcode(seed){let x=0;for(const c of seed)x=(x*31+c.charCodeAt(0))>>>0;let px=0,r="";for(let i=0;i<46;i++){x=(x*1103515245+12345)>>>0;const w=1+(x>>>28)%3;if(i%2===0)r+=`<rect x="${px}" y="0" width="${w}" height="18" fill="#111"/>`;px+=w}return `<svg viewBox="0 0 ${px} 18" preserveAspectRatio="none" aria-hidden="true">${r}</svg>`}
+function tray(l){
+  const t=topBid(l),per=l.cm2&&t?(t/l.cm2):0;
+  const meat=l.img?`<div class="meat"><img src="${l.img}" alt="Lot ${l.no}: ${esc(l.part)}" loading="lazy"></div>`:`<div class="meat none">Photo of the spot<br>coming soon</div>`;
+  return meat+`<div class="lbl"><div class="lh"><span>FRISCH</span><span>LOT ${l.no}</span></div><div class="lb"><div class="lt">Menschenhaut, ${esc(l.de)}</div><div class="lr"><span>Fläche</span><span>${l.cm2?"≈"+l.cm2+" cm²":"k. A."}</span></div><div class="lr"><span>€/cm²</span><span>${per?per.toFixed(2).replace(".",","):"—"}</span></div><div class="lp"><span>Preis</span><b>${deEur(t)}</b></div>${barcode("lot"+l.no)}<div class="mhd">Mindestens haltbar: lebenslang</div></div></div>`;
+}
+function status(l){const ph=phase();if(ph==="pre")return `<b>0 bids</b> · opens 30 Nov`;if(ph==="closed")return `<b>${l.count} bids</b> · ended`;return `<b>${l.count} bids</b> · ${left(ST.close)} left`}
+
+function renderCats(){const cs=["All",...new Set(LOTS.map(l=>l.cat))];$("cats").innerHTML=cs.map(c=>`<button type="button" aria-pressed="${c===cat}" data-c="${esc(c)}">${esc(c)}</button>`).join("");
+  $("cats").querySelectorAll("button").forEach(b=>b.onclick=()=>{cat=b.dataset.c;renderCats();renderGrid();show(null)})}
+function card(l){return `<button type="button" class="card" data-no="${l.no}"><div class="tray">${tray(l)}</div><div class="ti">${l.bids.length?'<span class="badge">HOT</span>':''}Human skin, ${esc(l.part.toLowerCase())}, ${esc(l.size)}</div><div class="cond">${esc(l.cond)}</div><div class="pr">${eur(topBid(l))}</div><div class="sub">${status(l)}</div><div class="sub">${l.cm2&&topBid(l)?"€"+(topBid(l)/l.cm2).toFixed(2)+"/cm² · ":""}from ${esc(l.seller)}</div></button>`}
+function renderGrid(){
+  const qq=q.toLowerCase(),list=LOTS.filter(l=>(cat==="All"||l.cat===cat)&&(!qq||(l.part+" "+l.de+" "+l.seller+" "+l.cat).toLowerCase().includes(qq)));
+  $("grid").innerHTML=list.map(card).join("")||`<p class="sub">No skin matches “${esc(q)}”.</p>`;
+  $("count").textContent=`${list.length} result${list.length===1?"":"s"} · sorted by lot number`;
+  $("grid").querySelectorAll(".card").forEach(b=>b.onclick=()=>open(b.dataset.no));
+}
+function open(no){location.hash="lot-"+no;show(no);scrollTo(0,0)}
+function show(no){
+  cur=no?LOTS.find(l=>l.no===no):null;$("list").hidden=!!cur;$("page").hidden=!cur;if(cur)renderPage(false)}
+function renderPage(keep){
+  const l=cur,ph=phase(),t=topBid(l),mn=minBid(l);
+  $("crumbs").innerHTML=`<button type="button" id="back">Skin</button> › ${esc(l.cat)} › Lot ${l.no}`;$("back").onclick=()=>{history.replaceState(null,"",location.pathname);show(null)};
+  $("ptray").innerHTML=tray(l);
+  $("ptitle").textContent=`Human skin, ${l.part.toLowerCase()}, ${l.size}. Lot ${l.no}`;
+  $("pseller").innerHTML=`Sold by <b>${esc(l.seller)}</b> · item location: Berlin, Germany`;
+  $("plab").textContent=l.bids.length?"Current bid":"Starting bid";$("pprice").textContent=eur(t);
+  $("pstat").innerHTML=`${l.count} bids · ${l.nb} bidders${l.cm2&&t?"<br>€"+(t/l.cm2).toFixed(2)+" per cm²":""}`;
+  $("pends").innerHTML=ph==="pre"?`Bidding opens <b>30 Nov 2026</b>, in ${left(ST.open)}. Get your paddle number now.`:ph==="open"?`<span class="live">● Live</span> · ends in <b>${left(ST.close)}</b> (6 Dec, 20:00 CET)`:`Bidding has ended.`;
+  $("amtrow").hidden=ph!=="open";$("amt").min=mn||1;if(!keep||!(+$("amt").value>=mn))$("amt").value=mn||"";
+  const go=$("go");go.textContent=ph==="pre"?(MY?"You're registered":"Get paddle number"):ph==="open"?"Place bid":"Bidding ended";go.disabled=ph==="closed";
+  $("ppad").hidden=!MY;$("ppadn").textContent=MY?"#"+MY:"";
+  if(!keep)$("msg").hidden=true;
+  $("spec").innerHTML=[["Body part",l.part],["Area",l.size+(l.cm2?` (≈${l.cm2} cm²)`:"")],["Condition",l.cond],["Not allowed",l.off],["Seller",l.seller],["Starting bid",eur(l.start)],["Bid increment","5%, at least €10"]].map(([a,b])=>`<tr><th>${a}</th><td>${esc(b)}</td></tr>`).join("");
+  $("hist").innerHTML=`<tr><th style="width:auto">Bidder</th><th style="width:auto">Bid</th><th style="width:auto">Time</th></tr>`+(l.bids.map(b=>`<tr class="${b.num===MY?"mine":""}"><td>Paddle #${b.num}${b.num===MY?'<span class="you">YOU</span>':""}</td><td>${eur(b.v)}</td><td>${ago(b.t)}</td></tr>`).join("")||`<tr><td colspan="3" class="sub">No bids yet.${ph==="pre"?" Bidding opens on 30 November.":""}</td></tr>`);
+  $("more").innerHTML=LOTS.filter(x=>x!==l).map(x=>`<button type="button" class="card" data-no="${x.no}"><div class="tray">${tray(x)}</div><div class="ti">Human skin, ${esc(x.part.toLowerCase())}</div><div class="pr" style="font-size:16px">${eur(topBid(x))}</div></button>`).join("");
+  $("more").querySelectorAll(".card").forEach(b=>b.onclick=()=>open(b.dataset.no));
+}
+function tick(){const ph=phase();$("clock").innerHTML=ph==="pre"?`Bidding opens in <b>${left(ST.open)}</b>`:ph==="open"?`<span class="live">● Live</span> · ends in <b>${left(ST.close)}</b>`:"Auction ended";$("nb").textContent=ST.bidders;$("mypad").hidden=!MY;$("mynum").textContent=MY?"#"+MY:""}
+
+// form
+try{const s=JSON.parse(localStorage.getItem("bidder")||"{}");["nick","country","contact"].forEach(k=>{if(s[k])$(k).value=s[k]})}catch(e){}
+document.querySelectorAll("[data-add]").forEach(b=>b.onclick=()=>{const a=$("amt");a.value=(+a.value||+a.min)+ +b.dataset.add});
+$("f").addEventListener("submit",e=>{
+  e.preventDefault();const l=cur,ph=phase(),v=Math.round(+$("amt").value),mn=minBid(l),m=$("msg");
+  const err=t=>{m.className="msg err";m.textContent=t;m.hidden=false};
+  if(ph==="closed")return err("Bidding has ended.");
+  if(ph==="open"){if(!l.start&&!l.bids.length)return err("The starting bid for this lot is not set yet. Check back soon.");if(!(v>=mn))return err(`Bid at least €${mn.toLocaleString("en")}.`)}
+  const nick=$("nick").value.trim(),contact=$("contact").value.trim(),country=$("country").value.trim();
+  if(!nick)return err("Add a name or nickname.");if(!contact)return err("Add your Instagram or email so we can reach you if you win.");
+  if(!$("c21").checked||!$("crules").checked)return err("Confirm that you are 21+ and accept the rules.");
+  try{localStorage.setItem("bidder",JSON.stringify({nick,country,contact}))}catch(_){}
+  const body={lot:l.no,amount:v,name:nick,country,contact,age_21:"yes",rules:"yes","bot-field":$("hp").value};
+  const go=$("go");go.disabled=true;
+  fetch(ph==="open"?"/api/bid":"/api/register",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify(body)})
+   .then(async r=>{const d=await r.json().catch(()=>null);if(!d)throw new Error("Bidding works on skinauction.org. This preview cannot send bids.");if(!r.ok||d.error){const x=new Error(d.error);x.min=d.min;throw x}return d})
+   .then(d=>{
+     MY=d.num;try{localStorage.setItem("paddle",String(d.num))}catch(_){}
+     const fd=new URLSearchParams({"form-name":"bid",lot:`Lot ${l.no} · ${l.part}`,bid_eur:ph==="open"?String(v):"",name:nick,country,contact,age_21:"yes",rules:"yes",paddle:String(d.num),kind:ph==="open"?"bid":"register"});
+     fetch("/",{method:"POST",headers:{"Content-Type":"application/x-www-form-urlencoded"},body:fd.toString()}).catch(()=>{});
+     if(ph==="open"){l.bids=d.bids;l.count=d.count}
+     renderPage(true);renderGrid();tick();
+     m.className="msg";m.textContent=ph==="open"?`Bid of €${v.toLocaleString("en")} placed as paddle #${d.num}.`:`Your paddle number is #${d.num}. Bidding opens on 30 November: come back and bid with the same Instagram or email.`;m.hidden=false;
+   })
+   .catch(x=>{err(x.message||"Could not send. Try again.");if(x.min)$("amt").value=x.min;poll()})
+   .finally(()=>{$("go").disabled=phase()==="closed"});
+});
+$("sf").addEventListener("submit",e=>{e.preventDefault();q=$("q").value.trim();show(null);renderGrid()});
+$("home").addEventListener("click",e=>{e.preventDefault();q="";$("q").value="";cat="All";history.replaceState(null,"",location.pathname);renderCats();renderGrid();show(null)});
+
+// live data
+function apply(d){ST.skew=d.now-Date.now();ST.open=d.open;ST.close=d.close;ST.bidders=d.bidders;ST.live=true;
+  LOTS.forEach(l=>{const x=d.lots[l.no];if(x){l.bids=x.bids;l.count=x.count;l.nb=x.bidders}});renderGrid();if(cur)renderPage(true);tick()}
+function poll(){if(document.hidden)return;fetch("/api/board",{cache:"no-store"}).then(r=>r.ok?r.json():null).then(d=>{if(d&&d.lots)apply(d)}).catch(()=>{})}
+(function loop(){setTimeout(()=>{poll();loop()},phase()==="open"?4000:30000)})();
+document.addEventListener("visibilitychange",poll);
+setInterval(()=>{tick();if(cur&&phase()==="open")$("pends").innerHTML=`<span class="live">● Live</span> · ends in <b>${left(ST.close)}</b> (6 Dec, 20:00 CET)`},1000);
+window.addEventListener("hashchange",()=>{const m=location.hash.match(/^#lot-(\d+)$/);show(m?m[1]:null)});
+
+fetch("assets/lots.json",{cache:"no-cache"}).then(r=>r.json()).then(d=>{
+  LOTS=d.map(l=>({...l,bids:[],count:0,nb:0}));renderCats();renderGrid();tick();
+  const m=location.hash.match(/^#lot-(\d+)$/);if(m)show(m[1]);poll();
+}).catch(()=>{$("grid").innerHTML='<p class="sub">Could not load the lots. Reload the page.</p>'});
+</script>
+</body></html>
