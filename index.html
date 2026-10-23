@@ -133,7 +133,7 @@ input:focus{border-color:var(--fg);outline:none}
 
   <div class="stage">
     <aside class="panel left" aria-label="Lots">
-      <div class="ph">Inventory <small id="invc">8 lots · preview</small></div>
+      <div class="ph">Inventory <small id="invc">5 lots · more coming</small></div>
       <div class="inv" id="inv"></div>
     </aside>
 
@@ -183,7 +183,7 @@ input:focus{border-color:var(--fg);outline:none}
           <div class="ph" style="padding:0 0 6px">Top bids <small id="boardnote"></small></div>
           <div class="board" id="board"></div>
         </div>
-        <p class="note">Preview lots: the real lots and sellers are revealed on 30 Nov. Bids placed now are pre-registrations; each one is confirmed by email or Instagram DM. <a href="about.html#rules" style="color:inherit">Rules</a></p>
+        <p class="note">Lots are still being finalised and more are coming before 30 Nov. Bids placed now are pre-registrations; each one is confirmed by email or Instagram DM. Every seller can refuse a design. <a href="about.html#rules" style="color:inherit">Rules</a></p>
       </div>
     </aside>
   </div>
@@ -205,22 +205,20 @@ const RAR=[
   {n:"Contraband",c:"--r-contraband",at:5000}
 ];
 const LOTS=[
-  {no:"01",part:"Left Forearm",  p:[ 0.56,1.43, 0.03],tile:0, size:"7 × 5 cm", float:0.012,start:180},
-  {no:"02",part:"Right Upper Arm",p:[-0.30,1.46, 0.05],tile:5, size:"6 × 6 cm", float:0.071,start:95},
-  {no:"03",part:"Upper Back",    p:[ 0.00,1.36,-0.13],tile:8, size:"10 × 8 cm",float:0.004,start:620},
-  {no:"04",part:"Sternum",       p:[ 0.00,1.30, 0.13],tile:2, size:"5 × 9 cm", float:0.026,start:260},
-  {no:"05",part:"Right Thigh",   p:[-0.11,0.66, 0.08],tile:9, size:"9 × 9 cm", float:0.150,start:1150},
-  {no:"06",part:"Left Calf",     p:[ 0.12,0.32,-0.07],tile:6, size:"6 × 8 cm", float:0.390,start:40},
-  {no:"07",part:"Nape",          p:[ 0.00,1.56,-0.07],tile:4, size:"4 × 4 cm", float:0.003,start:2700},
-  {no:"08",part:"Left Ribs",     p:[ 0.15,1.16, 0.02],tile:10,size:"8 × 6 cm", float:0.044,start:330}
+  {no:"01",part:"Right Thigh",        p:[-0.11,0.62, 0.08],tile:10,size:"10–15 cm",       float:0.21, start:100, seller:"@linaschriever · Berlin",          off:"portraits, faces"},
+  {no:"02",part:"Back",               p:[ 0.00,1.30,-0.13],tile:11,size:"up to 25 cm",    float:0.04, start:100, seller:"Participant 02 · Berlin",         off:"political content, names, faces"},
+  {no:"03",part:"Outer Thigh · Cover-up",p:[-0.17,0.72,0.00],tile:5,size:"large, over an old tattoo",float:0.62,start:null,seller:"Participant 03 · Berlin",off:"to be announced"},
+  {no:"04",part:"Butt, Knee or Ankle",p:[-0.11,0.48, 0.07],tile:2, size:"up to 10 × 10 cm",float:0.009,start:111, seller:"@louis.difadv · Friedrichshain",   off:"faces of real people, hate symbols"},
+  {no:"05",part:"Left Calf",          p:[ 0.11,0.33,-0.06],tile:8, size:"to be announced",float:0.10, start:null,seller:"YZMA · the artist",              off:"hate symbols"}
 ];
-LOTS.forEach(l=>{l.seller="Participant "+l.no+" · Berlin";l.board=[]});
+LOTS.forEach(l=>{l.board=[]});
 
 const rarOf=v=>{let r=RAR[0];for(const x of RAR)if(v>=x.at)r=x;return r};
 const nextOf=v=>RAR.find(x=>x.at>v);
 const css=n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim();
-const topBid=l=>l.board.length?l.board[0].v:l.start;
-const minBid=l=>l.board.length?topBid(l)+step(topBid(l)):l.start;
+const topBid=l=>l.board.length?l.board[0].v:(l.start||0);
+const eur=v=>v?"€"+v.toLocaleString("en"):"TBA";
+const minBid=l=>l.board.length?topBid(l)+step(topBid(l)):(l.start||0);
 const step=v=>Math.max(10,Math.ceil(v*0.05/5)*5);
 const wearName=f=>f<.07?"Factory New":f<.15?"Minimal Wear":f<.38?"Field-Tested":f<.45?"Well-Worn":"Battle-Scarred";
 const tilePos=t=>`${(t%4)*100/3}% ${Math.floor(t/4)*100/3}%`;
@@ -237,7 +235,7 @@ LOTS.forEach((l,i)=>{
 });
 function paintTile(l){
   const r=rarOf(topBid(l));l.el.style.setProperty("--rc",`var(${r.c})`);
-  l.el.querySelector(".px").textContent="€"+topBid(l).toLocaleString("en");
+  l.el.querySelector(".px").textContent=eur(topBid(l));
 }
 function select(i,turn){
   sel=i;const l=LOTS[i],t=topBid(l),r=rarOf(t),nx=nextOf(t);
@@ -245,13 +243,13 @@ function select(i,turn){
   document.documentElement.style.setProperty("--rc",`var(${r.c})`);
   $("pname").innerHTML=`<span class="star">★</span> Human | ${l.part}`;
   $("prar").textContent=`${r.n} Skin · ${wearName(l.float)}`;
-  $("pstats").innerHTML=`<span>Lot <b>${l.no}</b></span><span>Float <b>${l.float.toFixed(4)}</b></span><span>Area <b>${l.size}</b></span><span>Seller <b>${l.seller}</b></span>`;
+  $("pstats").innerHTML=`<span>Lot <b>${l.no}</b></span><span>Float <b>${l.float.toFixed(4)}</b></span><span>Area <b>${l.size}</b></span><span>Seller <b>${l.seller}</b></span><span>Off-limits <b>${l.off}</b></span>`;
   $("pwear").style.left=Math.min(99,l.float*100)+"%";
-  $("clb").textContent=`Lot ${l.no} · €${t.toLocaleString("en")}`;
+  $("clb").textContent=`Lot ${l.no} · ${eur(t)}`;
   $("sheetlot").textContent=`Lot ${l.no} · ${l.part}`;
-  $("top").textContent="€"+t.toLocaleString("en");
-  const mn=minBid(l);$("toplab").textContent=l.board.length?"Top bid":"Start price";$("boardnote").textContent=l.board.length?"":"bidding opens 30.11";$("minb").textContent="€"+mn.toLocaleString("en");
-  $("amt").min=mn;$("amt").value=mn;
+  $("top").textContent=eur(t);
+  const mn=minBid(l);$("toplab").textContent=l.board.length?"Top bid":"Start price";$("boardnote").textContent=l.board.length?"":"bidding opens 30.11";$("minb").textContent=eur(mn);
+  $("amt").min=mn||1;$("amt").value=mn||"";
   $("tier").innerHTML=nx?`Next grade <b style="color:var(${nx.c})">${nx.n}</b> at €${nx.at.toLocaleString("en")}`:`Top grade reached`;
   $("board").innerHTML=l.board.slice(0,6).map((b,k)=>`<div class="row${b.me?" me":""}"><span>${k+1}</span><em>${esc(b.name)} <span>${esc(b.cc)}</span></em><b>€${b.v.toLocaleString("en")}</b></div>`).join("")||`<div class="row" style="background:var(--panel2);box-shadow:none"><span>–</span><em>No bids yet</em><b></b></div>`;
   $("msg").hidden=true;
@@ -262,6 +260,7 @@ document.querySelectorAll("[data-add]").forEach(b=>b.addEventListener("click",()
 $("f").addEventListener("submit",e=>{
   e.preventDefault();const l=LOTS[sel],v=Math.round(+$("amt").value),mn=minBid(l),m=$("msg");
   const err=t=>{m.className="msg err";m.textContent=t;m.hidden=false};
+  if(!l.start&&!l.board.length)return err("The start price for this lot is not set yet. Check back soon.");
   if(!(v>=mn))return err(`Bid at least €${mn.toLocaleString("en")}.`);
   if(!$("nick").value.trim())return err("Add a name or nickname.");
   if(!$("contact").value.trim())return err("Add your Instagram or email so we can reach you if you win.");
